@@ -1,0 +1,8 @@
+# Normaliza finales de línea en el repo (evita ruido entre Windows/Mac/Linux)
+* text=auto
+
+# Binarios: no tocar
+*.xlsx binary
+*.pkl binary
+*.png binary
+*.ico binary

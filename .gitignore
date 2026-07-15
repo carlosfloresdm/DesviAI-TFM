@@ -1,0 +1,31 @@
+# ===== DesviAI · .gitignore =====
+
+# Entorno virtual de Python (~500 MB — NUNCA subir)
+backend/.venv/
+.venv/
+venv/
+
+# Cachés de Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Base de datos de Django (se crea sola)
+db.sqlite3
+
+# Secretos (cada uno crea su .env a partir de .env.example)
+.env
+backend/.env
+
+# Artefactos binarios del modelo (se regeneran con: python core/ml/train.py)
+backend/core/ml/artifacts/
+
+# Config local de Claude Code (personal)
+.claude/settings.local.json
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

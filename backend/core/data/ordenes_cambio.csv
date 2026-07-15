@@ -1,0 +1,83 @@
+proyecto_id,orden_id,fecha,categoria,categoria_nombre,partida_afectada,impacto_costo,impacto_plazo_dias,descripcion
+13,OC-013-1,2021-06-03,sitio,Condición de sitio imprevista,movimiento de tierras,135696,34,Sobreexcavación y refuerzo imprevistos en movimiento de tierras.
+13,OC-013-2,2021-06-20,alcance,Cambio de alcance,acabados,248534,20,Incorporación de nuevos requerimientos en acabados no contemplados en el contrato inicial.
+15,OC-015-1,2023-05-26,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,157650,62,Rediseño de instalaciones hidrosanitarias por interferencias detectadas en obra.
+17,OC-017-1,2017-10-08,normativa,Ajuste normativo,estructura,128350,35,Adecuación de estructura a exigencia normativa surgida durante la ejecución.
+18,OC-018-1,2017-10-17,proveedor,Proveedor / suministro,ascensores,412407,44,Incremento de precio del suministro de ascensores frente a la cotización inicial.
+18,OC-018-2,2018-03-23,diseño,Error u omisión de diseño,columnas,561393,28,Corrección de omisión en planos de columnas que obligó a rehacer trabajo ejecutado.
+23,OC-023-1,2018-08-14,diseño,Error u omisión de diseño,columnas,398414,58,Rediseño de columnas por interferencias detectadas en obra.
+23,OC-023-2,2018-10-26,normativa,Ajuste normativo,estructura,102408,55,Requisito adicional de la autoridad para estructura en la revisión de permisos.
+23,OC-023-3,2018-11-29,sitio,Condición de sitio imprevista,cimentación,176778,103,Sobreexcavación y refuerzo imprevistos en cimentación.
+34,OC-034-1,2023-11-10,clima,Clima,movimiento de tierras,188200,38,Daños por condiciones climáticas adversas en movimiento de tierras.
+35,OC-035-1,2023-05-26,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,572607,23,Rediseño de instalaciones hidrosanitarias por interferencias detectadas en obra.
+35,OC-035-2,2023-09-24,sitio,Condición de sitio imprevista,movimiento de tierras,294193,49,Sobreexcavación y refuerzo imprevistos en movimiento de tierras.
+44,OC-044-1,2019-12-01,alcance,Cambio de alcance,estructura,844880,24,Incorporación de nuevos requerimientos en estructura no contemplados en el contrato inicial.
+44,OC-044-2,2020-08-19,sitio,Condición de sitio imprevista,cimentación,401642,35,Sobreexcavación y refuerzo imprevistos en cimentación.
+44,OC-044-3,2020-08-21,normativa,Ajuste normativo,impermeabilización,213746,19,Adecuación de impermeabilización a exigencia normativa surgida durante la ejecución.
+44,OC-044-4,2020-10-28,proveedor,Proveedor / suministro,estructura,482132,42,Retraso en la entrega de materiales de estructura que encareció la partida.
+56,OC-056-1,2020-11-16,normativa,Ajuste normativo,impermeabilización,253010,52,Requisito adicional de la autoridad para impermeabilización en la revisión de permisos.
+68,OC-068-1,2021-06-03,sitio,Condición de sitio imprevista,cimentación,128429,22,Sobreexcavación y refuerzo imprevistos en cimentación.
+68,OC-068-2,2021-08-11,alcance,Cambio de alcance,instalaciones eléctricas,245339,16,Ampliación de instalaciones eléctricas solicitada por el cliente respecto al proyecto original.
+68,OC-068-3,2021-10-03,proveedor,Proveedor / suministro,estructura,191132,25,Retraso en la entrega de materiales de estructura que encareció la partida.
+72,OC-072-1,2024-09-03,diseño,Error u omisión de diseño,cimentación,327211,55,Corrección de omisión en planos de cimentación que obligó a rehacer trabajo ejecutado.
+72,OC-072-2,2025-03-28,proveedor,Proveedor / suministro,fachada,198861,92,Retraso en la entrega de materiales de fachada que encareció la partida.
+76,OC-076-1,2022-01-24,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,79662,58,Corrección de omisión en planos de instalaciones hidrosanitarias que obligó a rehacer trabajo ejecutado.
+82,OC-082-1,2021-01-31,proveedor,Proveedor / suministro,fachada,614101,64,Incremento de precio del suministro de fachada frente a la cotización inicial.
+82,OC-082-2,2021-02-04,diseño,Error u omisión de diseño,losas,776477,38,Corrección de omisión en planos de losas que obligó a rehacer trabajo ejecutado.
+82,OC-082-3,2022-04-06,sitio,Condición de sitio imprevista,movimiento de tierras,429993,57,Condición del terreno distinta a la esperada en movimiento de tierras (nivel freático / roca).
+85,OC-085-1,2021-06-23,sitio,Condición de sitio imprevista,cimentación,40368,18,Sobreexcavación y refuerzo imprevistos en cimentación.
+87,OC-087-1,2018-06-30,diseño,Error u omisión de diseño,columnas,540768,14,Corrección de omisión en planos de columnas que obligó a rehacer trabajo ejecutado.
+87,OC-087-2,2018-11-30,alcance,Cambio de alcance,instalaciones eléctricas,720117,16,Ampliación de instalaciones eléctricas solicitada por el cliente respecto al proyecto original.
+87,OC-087-3,2019-03-26,proveedor,Proveedor / suministro,ascensores,371265,27,Incremento de precio del suministro de ascensores frente a la cotización inicial.
+91,OC-091-1,2020-01-28,alcance,Cambio de alcance,instalaciones eléctricas,311935,21,Ampliación de instalaciones eléctricas solicitada por el cliente respecto al proyecto original.
+91,OC-091-2,2020-03-27,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,273518,19,Corrección de omisión en planos de instalaciones hidrosanitarias que obligó a rehacer trabajo ejecutado.
+91,OC-091-3,2020-06-27,normativa,Ajuste normativo,instalaciones eléctricas,82577,15,Requisito adicional de la autoridad para instalaciones eléctricas en la revisión de permisos.
+91,OC-091-4,2021-02-02,sitio,Condición de sitio imprevista,movimiento de tierras,188499,22,Condición del terreno distinta a la esperada en movimiento de tierras (nivel freático / roca).
+104,OC-104-1,2019-08-15,alcance,Cambio de alcance,acabados,615202,69,Ampliación de acabados solicitada por el cliente respecto al proyecto original.
+107,OC-107-1,2024-09-20,sitio,Condición de sitio imprevista,urbanización,419072,12,Condición del terreno distinta a la esperada en urbanización (nivel freático / roca).
+107,OC-107-2,2024-11-04,diseño,Error u omisión de diseño,cimentación,845208,8,Rediseño de cimentación por interferencias detectadas en obra.
+108,OC-108-1,2023-05-27,diseño,Error u omisión de diseño,losas,57727,18,Corrección de omisión en planos de losas que obligó a rehacer trabajo ejecutado.
+118,OC-118-1,2020-06-28,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,955725,28,Rediseño de instalaciones hidrosanitarias por interferencias detectadas en obra.
+118,OC-118-2,2020-08-03,sitio,Condición de sitio imprevista,cimentación,589052,38,Sobreexcavación y refuerzo imprevistos en cimentación.
+118,OC-118-3,2020-08-05,alcance,Cambio de alcance,urbanización,912107,29,Ampliación de urbanización solicitada por el cliente respecto al proyecto original.
+118,OC-118-4,2021-11-15,proveedor,Proveedor / suministro,estructura,720534,52,Incremento de precio del suministro de estructura frente a la cotización inicial.
+120,OC-120-1,2019-01-14,alcance,Cambio de alcance,estructura,477283,19,Ampliación de estructura solicitada por el cliente respecto al proyecto original.
+120,OC-120-2,2020-03-10,proveedor,Proveedor / suministro,estructura,301554,35,Retraso en la entrega de materiales de estructura que encareció la partida.
+126,OC-126-1,2024-04-30,alcance,Cambio de alcance,urbanización,790688,29,Ampliación de urbanización solicitada por el cliente respecto al proyecto original.
+126,OC-126-2,2025-02-16,sitio,Condición de sitio imprevista,cimentación,353751,42,Sobreexcavación y refuerzo imprevistos en cimentación.
+126,OC-126-3,2025-05-02,proveedor,Proveedor / suministro,estructura,371508,53,Incremento de precio del suministro de estructura frente a la cotización inicial.
+127,OC-127-1,2021-07-11,sitio,Condición de sitio imprevista,urbanización,57835,61,Sobreexcavación y refuerzo imprevistos en urbanización.
+128,OC-128-1,2019-01-07,normativa,Ajuste normativo,instalaciones eléctricas,865860,0,Requisito adicional de la autoridad para instalaciones eléctricas en la revisión de permisos.
+133,OC-133-1,2021-07-19,diseño,Error u omisión de diseño,columnas,218195,32,Rediseño de columnas por interferencias detectadas en obra.
+133,OC-133-2,2021-09-17,clima,Clima,impermeabilización,39268,22,Daños por condiciones climáticas adversas en impermeabilización.
+133,OC-133-3,2021-10-11,sitio,Condición de sitio imprevista,movimiento de tierras,178585,34,Condición del terreno distinta a la esperada en movimiento de tierras (nivel freático / roca).
+133,OC-133-4,2021-10-19,proveedor,Proveedor / suministro,ascensores,155772,52,Incremento de precio del suministro de ascensores frente a la cotización inicial.
+139,OC-139-1,2024-12-06,proveedor,Proveedor / suministro,estructura,396202,177,Retraso en la entrega de materiales de estructura que encareció la partida.
+143,OC-143-1,2022-04-17,sitio,Condición de sitio imprevista,cimentación,237204,48,Sobreexcavación y refuerzo imprevistos en cimentación.
+143,OC-143-2,2022-08-10,diseño,Error u omisión de diseño,columnas,437276,35,Corrección de omisión en planos de columnas que obligó a rehacer trabajo ejecutado.
+143,OC-143-3,2023-10-14,alcance,Cambio de alcance,urbanización,441870,37,Incorporación de nuevos requerimientos en urbanización no contemplados en el contrato inicial.
+145,OC-145-1,2019-06-15,diseño,Error u omisión de diseño,columnas,756972,37,Corrección de omisión en planos de columnas que obligó a rehacer trabajo ejecutado.
+145,OC-145-2,2020-04-04,alcance,Cambio de alcance,urbanización,813279,38,Ampliación de urbanización solicitada por el cliente respecto al proyecto original.
+151,OC-151-1,2021-11-21,sitio,Condición de sitio imprevista,cimentación,169372,63,Sobreexcavación y refuerzo imprevistos en cimentación.
+151,OC-151-2,2022-05-05,alcance,Cambio de alcance,instalaciones eléctricas,413004,38,Ampliación de instalaciones eléctricas solicitada por el cliente respecto al proyecto original.
+151,OC-151-3,2022-05-06,proveedor,Proveedor / suministro,ascensores,187817,65,Incremento de precio del suministro de ascensores frente a la cotización inicial.
+155,OC-155-1,2021-04-05,diseño,Error u omisión de diseño,losas,469039,108,Rediseño de losas por interferencias detectadas en obra.
+164,OC-164-1,2019-09-26,proveedor,Proveedor / suministro,fachada,608639,49,Retraso en la entrega de materiales de fachada que encareció la partida.
+164,OC-164-2,2020-07-28,sitio,Condición de sitio imprevista,movimiento de tierras,553627,41,Sobreexcavación y refuerzo imprevistos en movimiento de tierras.
+164,OC-164-3,2021-05-10,alcance,Cambio de alcance,acabados,1054600,40,Ampliación de acabados solicitada por el cliente respecto al proyecto original.
+165,OC-165-1,2019-03-30,proveedor,Proveedor / suministro,fachada,199703,56,Incremento de precio del suministro de fachada frente a la cotización inicial.
+167,OC-167-1,2023-10-27,proveedor,Proveedor / suministro,acabados,157028,18,Retraso en la entrega de materiales de acabados que encareció la partida.
+167,OC-167-2,2024-11-24,diseño,Error u omisión de diseño,cimentación,200345,12,Rediseño de cimentación por interferencias detectadas en obra.
+168,OC-168-1,2024-08-04,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,701030,32,Corrección de omisión en planos de instalaciones hidrosanitarias que obligó a rehacer trabajo ejecutado.
+168,OC-168-2,2025-05-20,sitio,Condición de sitio imprevista,movimiento de tierras,463473,33,Sobreexcavación y refuerzo imprevistos en movimiento de tierras.
+168,OC-168-3,2025-07-06,alcance,Cambio de alcance,urbanización,905583,33,Incorporación de nuevos requerimientos en urbanización no contemplados en el contrato inicial.
+170,OC-170-1,2024-04-29,alcance,Cambio de alcance,acabados,325911,100,Incorporación de nuevos requerimientos en acabados no contemplados en el contrato inicial.
+171,OC-171-1,2022-05-24,proveedor,Proveedor / suministro,acabados,298871,91,Retraso en la entrega de materiales de acabados que encareció la partida.
+174,OC-174-1,2025-03-31,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,103550,37,Rediseño de instalaciones hidrosanitarias por interferencias detectadas en obra.
+175,OC-175-1,2021-08-30,proveedor,Proveedor / suministro,fachada,335327,41,Incremento de precio del suministro de fachada frente a la cotización inicial.
+175,OC-175-2,2022-01-06,diseño,Error u omisión de diseño,losas,473408,21,Corrección de omisión en planos de losas que obligó a rehacer trabajo ejecutado.
+177,OC-177-1,2021-10-26,alcance,Cambio de alcance,urbanización,882273,34,Incorporación de nuevos requerimientos en urbanización no contemplados en el contrato inicial.
+177,OC-177-2,2022-07-17,proveedor,Proveedor / suministro,fachada,582142,57,Incremento de precio del suministro de fachada frente a la cotización inicial.
+177,OC-177-3,2022-10-14,diseño,Error u omisión de diseño,columnas,810414,31,Corrección de omisión en planos de columnas que obligó a rehacer trabajo ejecutado.
+181,OC-181-1,2019-03-21,diseño,Error u omisión de diseño,instalaciones hidrosanitarias,959091,53,Rediseño de instalaciones hidrosanitarias por interferencias detectadas en obra.
+181,OC-181-2,2020-04-17,sitio,Condición de sitio imprevista,urbanización,706667,71,Sobreexcavación y refuerzo imprevistos en urbanización.

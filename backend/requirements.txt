@@ -1,0 +1,9 @@
+Django==5.1.*
+pandas
+numpy
+scikit-learn
+shap
+joblib
+openpyxl
+python-dotenv
+anthropic

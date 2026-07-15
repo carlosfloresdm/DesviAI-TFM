@@ -1,0 +1,233 @@
+{
+  "casos": [
+    {
+      "id": 1,
+      "nombre": "Obra CON episodio — ¿por qué se desvió?",
+      "pregunta": "¿Por qué se desvió esta obra?",
+      "obra_id": 44,
+      "modo": "mock",
+      "intent": "diagnostico",
+      "tools": [
+        "consultar_shap",
+        "buscar_episodio"
+      ],
+      "checks": [
+        {
+          "tipo": "tool",
+          "nombre": "invoca consultar_shap y buscar_episodio",
+          "ok": true
+        },
+        {
+          "tipo": "evidencia",
+          "nombre": "usa evidencia DIRECTA",
+          "ok": true
+        },
+        {
+          "tipo": "factual",
+          "nombre": "cita el desvío real (14.24%)",
+          "ok": true
+        },
+        {
+          "tipo": "factual",
+          "nombre": "cita la causa dominante (cambio de alcance)",
+          "ok": true
+        },
+        {
+          "tipo": "citacion",
+          "nombre": "declara la fuente",
+          "ok": true
+        }
+      ],
+      "ok": 5,
+      "total": 5,
+      "respuesta": "Estructuralmente, el modelo predice un desvío de costo de 9.76% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+3.11 pts), año de inicio (+0.44 pts), mes de inicio (+0.34 pts). Esta es la causa ex-ante (SHAP, capa 2).\n\nEn la EJECUCIÓN real, esta obra (id 44) tuvo un desvío de costo de 14.24%, y la evidencia forense DIRECTA (órdenes de cambio) lo atribuye a: cambio de alcance, condición de sitio imprevista, ajuste normativo, proveedor / suministro, con cambio de alcance como causa dominante. Fuente: memoria episódica (órdenes de cambio del proyecto)."
+    },
+    {
+      "id": 2,
+      "nombre": "Proyecto SIN episodio — ¿qué explica el riesgo?",
+      "pregunta": "¿Qué explica el riesgo de este proyecto?",
+      "obra_id": null,
+      "modo": "mock",
+      "intent": "diagnostico",
+      "tools": [
+        "consultar_shap",
+        "buscar_episodio",
+        "buscar_casos_similares"
+      ],
+      "checks": [
+        {
+          "tipo": "tool",
+          "nombre": "invoca SHAP + episodio + similares",
+          "ok": true
+        },
+        {
+          "tipo": "evidencia",
+          "nombre": "declara inferencia ESTADÍSTICA",
+          "ok": true
+        },
+        {
+          "tipo": "evidencia",
+          "nombre": "aclara que NO es evidencia directa",
+          "ok": true
+        },
+        {
+          "tipo": "citacion",
+          "nombre": "declara la fuente",
+          "ok": true
+        }
+      ],
+      "ok": 4,
+      "total": 4,
+      "respuesta": "Estructuralmente, el modelo predice un desvío de costo de 5.96% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+1.89 pts), experiencia alta del equipo (+0.14 pts). Esta es la causa ex-ante (SHAP, capa 2).\n\nNO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 2 tuvieron desvío de costo alto real (tasa 40%). Fuente: casos similares (capa 4) + patrones agregados (capa 3)."
+    },
+    {
+      "id": 3,
+      "nombre": "Riesgo ALTO — drivers estructurales (SHAP)",
+      "pregunta": "¿Qué explica el riesgo alto de este proyecto?",
+      "obra_id": null,
+      "modo": "mock",
+      "intent": "diagnostico",
+      "tools": [
+        "consultar_shap",
+        "buscar_episodio",
+        "buscar_casos_similares"
+      ],
+      "checks": [
+        {
+          "tipo": "tool",
+          "nombre": "invoca consultar_shap",
+          "ok": true
+        },
+        {
+          "tipo": "factual",
+          "nombre": "cita el driver SHAP top ('nivel de avance del proyecto')",
+          "ok": true
+        },
+        {
+          "tipo": "factual",
+          "nombre": "cita la predicción (8.09%)",
+          "ok": true
+        },
+        {
+          "tipo": "citacion",
+          "nombre": "declara la capa/fuente",
+          "ok": true
+        }
+      ],
+      "ok": 4,
+      "total": 4,
+      "respuesta": "Estructuralmente, el modelo predice un desvío de costo de 8.09% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+1.76 pts), velocidad de obra (m²/día) (+0.40 pts), m² por unidad (+0.28 pts). Esta es la causa ex-ante (SHAP, capa 2).\n\nNO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 2 tuvieron desvío de costo alto real (tasa 40%). Fuente: casos similares (capa 4) + patrones agregados (capa 3)."
+    },
+    {
+      "id": 4,
+      "nombre": "Riesgo BAJO — ¿qué se hizo bien?",
+      "pregunta": "¿Qué se hizo bien en esta obra?",
+      "obra_id": 127,
+      "modo": "mock",
+      "intent": "que_bien",
+      "tools": [
+        "consultar_shap",
+        "buscar_episodio"
+      ],
+      "checks": [
+        {
+          "tipo": "intent",
+          "nombre": "clasifica intención 'qué se hizo bien'",
+          "ok": true
+        },
+        {
+          "tipo": "tool",
+          "nombre": "invoca consultar_shap",
+          "ok": true
+        },
+        {
+          "tipo": "factual",
+          "nombre": "cita un factor protector (SHAP negativo)",
+          "ok": true
+        },
+        {
+          "tipo": "citacion",
+          "nombre": "declara la fuente",
+          "ok": true
+        }
+      ],
+      "ok": 4,
+      "total": 4,
+      "respuesta": "A favor del proyecto (factores que REDUCEN el desvío según SHAP): nivel de avance del proyecto (-2.84 pts), velocidad de obra (m²/día) (-0.39 pts), experiencia alta del equipo (-0.38 pts). Estos son los aspectos estructurales que lo acercan al perfil de bajo desvío. En la ejecución real, la obra 127 cerró con un desvío de costo de 0.28% (riesgo BAJO): confirma que las decisiones estructurales fueron acertadas. Fuente: explicabilidad estructural (capa 2)."
+    },
+    {
+      "id": 5,
+      "nombre": "Mitigación de cambio de alcance (recuperación)",
+      "pregunta": "¿Cómo mitigo el riesgo de cambio de alcance?",
+      "obra_id": null,
+      "modo": "mock",
+      "intent": "mitigacion",
+      "tools": [
+        "consultar_shap",
+        "leer_memoria"
+      ],
+      "checks": [
+        {
+          "tipo": "intent",
+          "nombre": "clasifica intención 'mitigación'",
+          "ok": true
+        },
+        {
+          "tipo": "tool",
+          "nombre": "invoca leer_memoria",
+          "ok": true
+        },
+        {
+          "tipo": "retrieval",
+          "nombre": "recupera el procedimiento de ALCANCE",
+          "ok": true
+        },
+        {
+          "tipo": "citacion",
+          "nombre": "declara la fuente",
+          "ok": true
+        }
+      ],
+      "ok": 4,
+      "total": 4,
+      "respuesta": "Para mitigar el riesgo, el foco debe estar en la causa que mencionas (cambio de alcance). Procedimiento recomendado:\n  1. Congelar el alcance base antes de iniciar obra: acta firmada de requerimientos, planos y especificaciones, con número de versión.\n  2. Procedimiento formal de control de cambios: todo requerimiento nuevo entra por una orden de cambio con impacto de costo y plazo cuantificado *antes* de ejecutarse.\n  3. Umbral de aprobación escalonado: cambios menores los aprueba el jefe de obra; por encima de un % del contrato, requieren aprobación de dirección y del cliente.\n  4. Registro acumulado visible: llevar el total de cambios aprobados como % del contrato; si supera ~5 %, activar revisión de contingencia.\nFuente: memoria procedural [[mitigacion-cambio-alcance]]."
+    }
+  ],
+  "metricas": {
+    "Precisión de invocación de tools": {
+      "aciertos": 5,
+      "total": 5,
+      "pct": 100.0
+    },
+    "Exactitud factual": {
+      "aciertos": 5,
+      "total": 5,
+      "pct": 100.0
+    },
+    "Cobertura de citación": {
+      "aciertos": 5,
+      "total": 5,
+      "pct": 100.0
+    },
+    "Ruta de evidencia": {
+      "aciertos": 3,
+      "total": 3,
+      "pct": 100.0
+    },
+    "Precisión de recuperación": {
+      "aciertos": 1,
+      "total": 1,
+      "pct": 100.0
+    },
+    "Clasificación de intención": {
+      "aciertos": 2,
+      "total": 2,
+      "pct": 100.0
+    }
+  },
+  "global": {
+    "aciertos": 21,
+    "total": 21,
+    "pct": 100.0
+  }
+}

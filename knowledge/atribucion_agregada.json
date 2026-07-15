@@ -1,0 +1,45 @@
+{
+  "n_obras_con_episodio": 40,
+  "pct_del_historico": 20.0,
+  "total_sobrecosto_usd": 34660935,
+  "n_ordenes_total": 82,
+  "por_categoria": {
+    "diseño": {
+      "nombre": "Error u omisión de diseño",
+      "monto_usd": 10675680,
+      "n_ordenes": 22,
+      "pct_del_sobrecosto": 30.8
+    },
+    "alcance": {
+      "nombre": "Cambio de alcance",
+      "monto_usd": 10002605,
+      "n_ordenes": 16,
+      "pct_del_sobrecosto": 28.9
+    },
+    "proveedor": {
+      "nombre": "Proveedor / suministro",
+      "monto_usd": 6584995,
+      "n_ordenes": 18,
+      "pct_del_sobrecosto": 19.0
+    },
+    "sitio": {
+      "nombre": "Condición de sitio imprevista",
+      "monto_usd": 5524236,
+      "n_ordenes": 18,
+      "pct_del_sobrecosto": 15.9
+    },
+    "normativa": {
+      "nombre": "Ajuste normativo",
+      "monto_usd": 1645951,
+      "n_ordenes": 6,
+      "pct_del_sobrecosto": 4.7
+    },
+    "clima": {
+      "nombre": "Clima",
+      "monto_usd": 227468,
+      "n_ordenes": 2,
+      "pct_del_sobrecosto": 0.7
+    }
+  },
+  "nota": "Estudio piloto: órdenes de cambio reconstruidas para el 20% del histórico. Calibración forense, no base de conclusiones generalizables al 100% de las obras."
+}

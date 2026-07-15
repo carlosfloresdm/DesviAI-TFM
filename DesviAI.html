@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=1320"/>
+  <title>DesviAI · Predicción de desviación de costos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <template id="__bundler_thumbnail" data-bg-color="#F4F5F7">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+      <!-- Card frame -->
+      <rect x="280" y="180" width="640" height="440" rx="28" fill="#FFFFFF" stroke="#E4E6EA" stroke-width="3"/>
+      <!-- DesviAI mark -->
+      <rect x="540" y="280" width="120" height="120" rx="24" fill="#F36C24"/>
+      <path d="M566 372 L596 332 L616 352 L654 296" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="654" cy="296" r="8" fill="white"/>
+      <!-- Wordmark -->
+      <text x="600" y="470" font-family="Manrope, Inter, sans-serif" font-weight="700" font-size="56" text-anchor="middle" fill="#111827">
+        <tspan fill="#F36C24">Desvi</tspan><tspan>AI</tspan>
+      </text>
+      <text x="600" y="510" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle" fill="#6B7280" letter-spacing="0.06em">PREDICCIÓN DE DESVIACIÓN DE COSTOS</text>
+      <!-- Sample data row -->
+      <rect x="350" y="550" width="500" height="6" rx="3" fill="#ECEEF2"/>
+      <rect x="350" y="550" width="220" height="6" rx="3" fill="#F36C24"/>
+      <circle cx="570" cy="553" r="9" fill="#F36C24" stroke="white" stroke-width="3"/>
+    </svg>
+  </template>
+
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="shared.jsx"></script>
+  <script type="text/babel" src="screen-login.jsx"></script>
+  <script type="text/babel" src="screen-dashboard.jsx"></script>
+  <script type="text/babel" src="screen-form.jsx"></script>
+  <script type="text/babel" src="screen-pipeline.jsx"></script>
+  <script type="text/babel" src="screen-report.jsx"></script>
+  <script type="text/babel" src="floating-chat.jsx"></script>
+  <script type="text/babel" src="screen-chat.jsx"></script>
+  <script type="text/babel" src="screen-closeout.jsx"></script>
+  <script type="text/babel" src="screen-extra.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>
