@@ -19,31 +19,14 @@ function Meta({ label, value }) {
   );
 }
 
-function CIBar({ low, high, point }) {
-  const min = Math.floor(Math.min(0, low) - 1);
-  const max = Math.ceil(Math.max(high, point) + 1);
-  const pos = (v) => ((v - min) / (max - min)) * 100;
-  return (
-    <div className="ci-bar">
-      <div className="ci-track"/>
-      <div className="ci-range" style={{ left: pos(low) + '%', width: (pos(high) - pos(low)) + '%' }}/>
-      <div className="ci-point" style={{ left: pos(point) + '%' }}/>
-      <div className="ci-tick" style={{ left: pos(0) + '%' }}>0%</div>
-      <div className="ci-tick" style={{ left: pos(low) + '%' }}>{pctStr(low)}</div>
-      <div className="ci-tick" style={{ left: pos(point) + '%', color: 'var(--orange-2)', fontWeight: 700 }}>{pctStr(point)}</div>
-      <div className="ci-tick" style={{ left: pos(high) + '%' }}>{pctStr(high)}</div>
-    </div>
-  );
-}
-
 // El modelo produce DOS salidas que responden preguntas distintas: el % (¿cuánto
 // se desvía? — regresión) y la banda (¿qué tan probable es superar el desvío típico
-// del histórico? — clasificador). No son lo mismo ni una se deriva de la otra; esta
-// frase las fusiona en una sola lectura: la banda habla de probabilidad, el % es la
-// estimación gruesa de magnitud.
+// del histórico? — clasificador). No son lo mismo ni una se deriva de la otra; la
+// frase lo explica sin repetir números: la banda habla de probabilidad, el % grande
+// de magnitud.
 const PROB_TXT = { BAJO: 'Poco probable', MEDIO: 'Probabilidad media de', ALTO: 'Altamente probable' };
 
-function DevBlock({ titulo, dim, unidadFinal, finalVal, sustantivo }) {
+function DevBlock({ titulo, dim, sustantivo }) {
   return (
     <div className="deviation">
       <div className="page-eyebrow" style={{ marginBottom: 0 }}>{titulo}</div>
@@ -51,16 +34,12 @@ function DevBlock({ titulo, dim, unidadFinal, finalVal, sustantivo }) {
         <span className="sign">{dim.desvio_estimado_pct > 0 ? '+' : ''}</span>
         {Number(dim.desvio_estimado_pct).toFixed(1)}<span className="small">%</span>
       </div>
-      <div className="ci-text">
-        Banda <span className={"badge dot " + BANDA_CLASS[dim.riesgo]}>{dim.riesgo}</span>{' · '}
-        prob. desvío alto <span className="mono">{Math.round(dim.probabilidad_alto * 100)}%</span>{' · '}
-        <span className="mono">{unidadFinal}: {finalVal}</span>
+      <div style={{ marginTop: 2 }}>
+        <span className={"badge dot " + BANDA_CLASS[dim.riesgo]}>Riesgo {dim.riesgo.toLowerCase()}</span>
       </div>
-      <div className="dim" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 2 }}>
+      <div className="dim" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 6 }}>
         {PROB_TXT[dim.riesgo]} un {sustantivo} por encima del típico del histórico.
-        Estimación gruesa: {pctStr(dim.desvio_estimado_pct)}.
       </div>
-      <CIBar low={dim.ic80_pct[0]} high={dim.ic80_pct[1]} point={dim.desvio_estimado_pct}/>
     </div>
   );
 }
@@ -83,7 +62,6 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
   const expC = explicaciones.desvio_costo;
   const shap = expC.contribuciones;
   const maxAbs = Math.max(...shap.map(s => Math.abs(s.contribucion_pts))) || 1;
-  const comp = sc.componentes;
 
   return (
     <div className="screen">
@@ -128,11 +106,9 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
                 (superficie, niveles, presupuesto, sistema constructivo…).
               </div>
             </div>
-            <DevBlock titulo="Desvío de costo" dim={prediccion.costo} sustantivo="sobrecosto"
-              unidadFinal="presupuesto final est." finalVal={fmt.usd(prediccion.costo.presupuesto_final_est)}/>
+            <DevBlock titulo="Desvío de costo" dim={prediccion.costo} sustantivo="sobrecosto"/>
             <div className="divider" style={{ margin: 0 }}/>
-            <DevBlock titulo="Desvío de plazo" dim={prediccion.tiempo} sustantivo="sobreplazo"
-              unidadFinal="plazo final est." finalVal={prediccion.tiempo.tiempo_final_est_dias + ' días'}/>
+            <DevBlock titulo="Desvío de plazo" dim={prediccion.tiempo} sustantivo="sobreplazo"/>
           </div>
         </div>
       </div>
@@ -208,24 +184,6 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
           </table>
         </div>
 
-        {/* Desglose del score contextual (el mecanismo) */}
-        <div className="card">
-          <div className="card-head">
-            <div>
-              <h3>Score de riesgo contextual <span className="accent">·</span> desglose</h3>
-              <div className="desc" style={{ marginTop: 2 }}>Cómo se compone el {sc.score}/100 (determinístico y citable)</div>
-            </div>
-            <span className={"badge " + (comp.evidencia_directa ? 'low' : 'med')}>
-              {comp.evidencia_directa ? 'evidencia directa' : 'evidencia estadística'}
-            </span>
-          </div>
-          <div className="card-pad">
-            <ScoreRow label="Modelo (clasificador)" peso="0.5" valor={comp.prob_clasificador} aporte={sc.aporte_al_score.modelo} color="var(--orange)"/>
-            <ScoreRow label="Casos similares (vecinos)" peso="0.3" valor={comp.tasa_desvio_alto_vecinos} aporte={sc.aporte_al_score.vecinos} color="var(--blue)"/>
-            <ScoreRow label="Memoria episódica" peso="0.2" valor={comp.senal_episodica} aporte={sc.aporte_al_score.episodica} color="var(--violet)"/>
-          </div>
-        </div>
-
         {/* Análisis de contexto de gestión: el checklist se responde en la entrada
             de datos; aquí solo se muestra el resultado (si se incluyó). */}
         {analysis.contexto && <ContextoResultadoCard resultado={analysis.contexto}/>}
@@ -277,21 +235,6 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
       </div>
 
       <FloatingChat project={project} obraId={analysis.obraId}/>
-    </div>
-  );
-}
-
-function ScoreRow({ label, peso, valor, aporte, color }) {
-  return (
-    <div className="setting-row" style={{ padding: '10px 0', alignItems: 'center' }}>
-      <div style={{ flex: '0 0 auto', width: 200 }}>
-        <div className="setting-name">{label}</div>
-        <div className="setting-desc">peso {peso} · valor {Math.round(valor * 100)}%</div>
-      </div>
-      <div style={{ flex: 1, height: 8, background: 'var(--bg-sunken)', borderRadius: 4, margin: '0 12px', overflow: 'hidden' }}>
-        <div style={{ width: (aporte) + '%', height: '100%', background: color, borderRadius: 4 }}/>
-      </div>
-      <div className="mono" style={{ fontWeight: 700, color, width: 54, textAlign: 'right' }}>+{Number(aporte).toFixed(1)}</div>
     </div>
   );
 }
