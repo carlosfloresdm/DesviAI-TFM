@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from core.ml import predictor, explainer, similares
+from core.ml import contexto as contexto_mod
 from core.ml import score as score_mod
 from core.ml import historico as historico_mod
 from core.ml.features import TARGETS
@@ -134,6 +135,41 @@ def score_contextual(request):
                              'score_contextual': score_mod.score_contextual(project, k=k, excluir_id=excluir_id)})
     except Exception as exc:  # noqa: BLE001
         return _err(f'Error calculando el score: {exc}', status=500)
+
+
+@csrf_exempt
+@require_http_methods(['GET', 'POST'])
+def contexto_config(request):
+    """Configuración del formulario de contexto de gestión (+ pre-selección).
+
+    GET devuelve los tipos y opciones; POST admite {project} para incluir la
+    sugerencia derivada de los datos ya cargados (avance → madurez).
+    """
+    project = None
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body or '{}')
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return _err('Cuerpo JSON inválido (se espera JSON codificado en UTF-8).')
+        project = body.get('project', body) or None
+    return JsonResponse({'ok': True, **contexto_mod.config_formulario(project)})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def contexto_calcular(request):
+    """Índice de riesgo de contexto de gestión (fórmula ancla determinística)."""
+    try:
+        body = json.loads(request.body or '{}')
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return _err('Cuerpo JSON inválido (se espera JSON codificado en UTF-8).')
+    checklist = body.get('checklist')
+    if not isinstance(checklist, dict):
+        return _err('Se requiere "checklist" (dict tipo → opción elegida).')
+    errores = contexto_mod.validar_checklist(checklist)
+    if errores:
+        return _err('Checklist inválido: ' + ' · '.join(errores))
+    return JsonResponse({'ok': True, 'contexto': contexto_mod.calcular_indice(checklist)})
 
 
 @require_http_methods(['GET'])

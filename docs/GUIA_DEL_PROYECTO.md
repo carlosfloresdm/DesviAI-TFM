@@ -140,6 +140,12 @@ sueltos, uno por pantalla:
 - **Score de riesgo contextual:** un número 0-100 que combina, de forma transparente, tres
   fuentes: el modelo (50%), las obras vecinas (30%) y la memoria episódica (20%). El agente
   lo *explica*, no lo inventa.
+- **Análisis de contexto de gestión:** una segunda lectura de riesgo, *opcional y paralela*
+  al modelo: un checklist de preguntas concretas sobre la gestión de la obra (madurez del
+  proyecto ejecutivo, permisos, terreno, contrato, cliente) que una fórmula determinística
+  convierte en una banda BAJO/MEDIO/ALTO. El modelo mira las *dimensiones* de la obra; este
+  análisis mira su *gestión* — se leen en conjunto, no compiten. Está en el reporte, bajo
+  la tarjeta "Análisis de contexto de gestión".
 - **Agente conversacional:** responde preguntas usando "herramientas" (SHAP, memorias, kNN)
   y **cita la fuente de cada afirmación**. Su única decisión propia es elegir entre
   *evidencia directa* (si la obra tiene órdenes de cambio) o *evidencia estadística* (si no).

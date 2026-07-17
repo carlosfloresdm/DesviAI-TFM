@@ -327,6 +327,9 @@ const API = {
   agent(project, pregunta, obra_id=null, historial=null) {
     return this._post('/agent/chat', { project, pregunta, obra_id, historial });
   },
+  // Análisis de contexto de gestión (checklist opcional del reporte).
+  contextoConfig(project)   { return this._post('/contexto/config', { project }); },
+  contextoCalcular(checklist) { return this._post('/contexto/calcular', { checklist }); },
   // Orquesta el análisis. Si obraId no es null (obra del histórico), se excluye a sí
   // misma de los similares/score y se recupera su episodio (evidencia directa).
   async analyze(project, obraId=null) {
