@@ -1,10 +1,11 @@
 /* eslint-disable */
-// Análisis de contexto de gestión (checklist opcional del reporte).
+// Análisis de contexto de gestión — checklist opcional de la ENTRADA DE DATOS.
 // El usuario responde preguntas concretas sobre la gestión de la obra (madurez del
-// ejecutivo, permisos, terreno, contrato, cliente…) y el backend calcula un índice
-// con una fórmula ancla determinística (/api/contexto/calcular). Esta lectura
-// CONVIVE con la predicción del modelo: no la modifica, la complementa — el modelo
-// mira las dimensiones de diseño; esto mira la gestión, que el modelo no ve.
+// ejecutivo, permisos, terreno, contrato, cliente…) junto con los datos del
+// proyecto; el backend calcula un índice con una fórmula ancla determinística
+// (/api/contexto/calcular) durante el análisis, y el REPORTE muestra el resultado.
+// Esta lectura CONVIVE con la predicción del modelo: no la modifica, la
+// complementa — el modelo mira las dimensiones de diseño; esto mira la gestión.
 // Las preguntas, opciones y pesos viven en el backend (core/ml/contexto.py, única
 // fuente de verdad); aquí solo se dibujan y se recoge la respuesta.
 
@@ -34,133 +35,133 @@ function CtxPregunta({ tipo, elegido, onElegir }) {
   );
 }
 
-function CtxResultado({ resultado }) {
-  return (
-    <div style={{ marginTop: 18 }}>
-      <div className="divider" style={{ margin: '0 0 16px' }}/>
-      <h3 style={{ marginBottom: 2 }}>Según el análisis de contexto</h3>
-      <div className="desc" style={{ marginBottom: 12 }}>
-        Lectura basada en el <strong>contexto de gestión</strong> de la obra (madurez del proyecto,
-        permisos, equipo del cliente…), que las dimensiones de diseño no capturan.
-      </div>
-
-      <span className={'badge dot ' + CTX_BANDA_CLASS[resultado.banda]} style={{ fontSize: 13, padding: '6px 14px' }}>
-        Riesgo de gestión {resultado.banda.toLowerCase()}
-      </span>
-      <div className="dim mono" style={{ fontSize: 12, marginTop: 6 }}>
-        Índice {resultado.indice} = riesgo base {resultado.riesgo_base} × factor del equipo {resultado.factor_amplificador}
-      </div>
-
-      <div style={{ fontWeight: 600, fontSize: 13, margin: '14px 0 4px' }}>¿De dónde viene?</div>
-      {Object.entries(resultado.desglose).map(([clave, d]) => (
-        <div key={clave} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-soft)' }}>
-          <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontWeight: 600, fontSize: 13 }}>
-              {d.etiqueta}
-              {d.rol === 'amplificador' && <span className="dim" style={{ fontWeight: 400, fontSize: 11.5 }}> · amplificador</span>}
-            </span>
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: CTX_PUNTO[d.nivel], flex: '0 0 auto' }}/>
-          </div>
-          <div className="dim" style={{ fontSize: 12, marginTop: 2 }}>{d.opcion_texto}</div>
-        </div>
-      ))}
-
-      <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'var(--blue-soft)', border: '1px solid var(--blue-line)', fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.5 }}>
-        🧭 <strong>Cómo leer las dos juntas:</strong> el modelo mira las <em>dimensiones</em> de la obra;
-        este análisis mira su <em>gestión</em>. Que una dé más alta que la otra no es contradicción:
-        son dos ángulos del mismo riesgo. Léelas en conjunto.
-      </div>
-    </div>
-  );
-}
-
-function ContextoGestion({ project }) {
-  const [abierto, setAbierto] = React.useState(false);
-  const [config, setConfig] = React.useState(null);      // { tipos, sugerencia }
-  const [checklist, setChecklist] = React.useState({});
-  const [resultado, setResultado] = React.useState(null);
+/* ===== Sección del FORMULARIO (entrada de datos) =====
+   Vive en screen-form.jsx, debajo de los parámetros de obra. Es opcional: solo
+   si el usuario la activa, el checklist viaja con el análisis. La pre-selección
+   sigue al campo "Avance del proyecto" mientras el usuario no la corrija. */
+function ContextoGestionForm({ avance, incluir, setIncluir, checklist, setChecklist }) {
+  const [config, setConfig] = React.useState(null);   // { tipos, sugerencia }
   const [error, setError] = React.useState(null);
-  const [cargando, setCargando] = React.useState(false);
+  const tocadas = React.useRef({});                   // preguntas ya corregidas a mano
 
-  // Carga la configuración (preguntas + sugerencia) al abrir por primera vez.
+  // Carga la configuración y re-aplica la sugerencia cuando cambia el avance
+  // (solo sobre preguntas que el usuario no tocó: el sistema propone, él dispone).
   React.useEffect(() => {
-    if (!abierto || config) return;
-    API.contextoConfig(project)
+    let vivo = true;
+    API.contextoConfig({ avance_proyecto: avance })
       .then(data => {
+        if (!vivo) return;
         setConfig(data);
-        const inicial = {};
-        data.tipos.forEach(t => {
-          inicial[t.clave] = data.sugerencia[t.clave] || t.opciones[0].id;
+        setChecklist(prev => {
+          const next = { ...prev };
+          data.tipos.forEach(t => {
+            if (!next[t.clave]) next[t.clave] = data.sugerencia[t.clave] || t.opciones[0].id;
+          });
+          Object.entries(data.sugerencia).forEach(([clave, opcionId]) => {
+            if (!tocadas.current[clave]) next[clave] = opcionId;
+          });
+          return next;
         });
-        setChecklist(inicial);
       })
-      .catch(e => setError('No se pudo cargar el formulario: ' + e.message));
-  }, [abierto]);
+      .catch(e => vivo && setError('No se pudo cargar el checklist: ' + e.message));
+    return () => { vivo = false; };
+  }, [avance]);
 
   const elegir = (clave, opcionId) => {
+    tocadas.current[clave] = true;
     setChecklist(prev => ({ ...prev, [clave]: opcionId }));
-    setResultado(null);  // una respuesta nueva invalida el resultado anterior
   };
-
-  const calcular = async () => {
-    setCargando(true); setError(null);
-    try {
-      const data = await API.contextoCalcular(checklist);
-      setResultado(data.contexto);
-    } catch (e) {
-      setError('No se pudo calcular: ' + e.message);
-    } finally {
-      setCargando(false);
-    }
-  };
-
-  const haySugerencia = config && Object.keys(config.sugerencia).length > 0;
 
   return (
-    <div className="card full">
-      <div className="card-head" style={{ cursor: 'pointer' }} onClick={() => setAbierto(a => !a)}>
+    <div className="card" style={{ marginTop: 16 }}>
+      <div className="card-head" style={{ cursor: 'pointer' }} onClick={() => setIncluir(v => !v)}>
         <div>
-          <h3>Análisis de contexto de gestión <span className="accent">·</span> opcional</h3>
+          <h3>Contexto de gestión <span className="accent">·</span> opcional</h3>
           <div className="desc" style={{ marginTop: 2 }}>
             Complementa la predicción con lo que el modelo no ve: permisos, terreno, contrato, cliente
           </div>
         </div>
-        <span className="dim mono" style={{ fontSize: 12 }}>{abierto ? '▾ ocultar' : '▸ analizar'}</span>
+        <label className="row" style={{ gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }} onClick={e => e.stopPropagation()}>
+          <input type="checkbox" checked={incluir} onChange={e => setIncluir(e.target.checked)}
+            style={{ accentColor: 'var(--orange)' }}/>
+          Incluir en el análisis
+        </label>
       </div>
 
-      {abierto && (
+      {incluir && (
         <div className="card-pad">
           <div className="dim" style={{ fontSize: 13, lineHeight: 1.5, marginBottom: 6 }}>
             Responde estas preguntas sobre el <strong>contexto de gestión</strong> de la obra. Este
-            análisis es <strong>opcional</strong> y <strong>convive</strong> con la predicción del
-            modelo: no la modifica, la complementa.
+            análisis <strong>convive</strong> con la predicción del modelo: no la modifica, la
+            complementa. El resultado aparecerá en el reporte.
           </div>
-          {haySugerencia && (
+          {config && Object.keys(config.sugerencia).length > 0 && (
             <div className="dim" style={{ fontSize: 12, marginBottom: 10 }}>
-              💡 Algunas respuestas vienen pre-seleccionadas a partir de los datos que ya cargaste.
-              Revísalas y ajusta lo que haga falta.
+              💡 Algunas respuestas vienen pre-seleccionadas a partir de los datos del proyecto
+              (p. ej. el avance). Revísalas y ajusta lo que haga falta.
             </div>
           )}
 
-          {!config && !error && <div className="dim" style={{ fontSize: 13 }}>Cargando formulario…</div>}
+          {!config && !error && <div className="dim" style={{ fontSize: 13 }}>Cargando checklist…</div>}
+          {error && <div style={{ color: 'var(--red)', fontSize: 13 }}>{error}</div>}
 
           {config && (
             <div className="col" style={{ gap: 12 }}>
               {config.tipos.map(t => (
                 <CtxPregunta key={t.clave} tipo={t} elegido={checklist[t.clave]} onElegir={elegir}/>
               ))}
-              <button className="btn btn-primary" onClick={calcular} disabled={cargando}>
-                {cargando ? 'Calculando…' : 'Calcular riesgo de gestión'}
-              </button>
             </div>
           )}
-
-          {error && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 10 }}>{error}</div>}
-          {resultado && <CtxResultado resultado={resultado}/>}
         </div>
       )}
     </div>
   );
 }
 
-window.ContextoGestion = ContextoGestion;
+/* ===== Tarjeta del REPORTE (solo resultado, ya calculado en el análisis) ===== */
+function ContextoResultadoCard({ resultado }) {
+  return (
+    <div className="card full">
+      <div className="card-head">
+        <div>
+          <h3>Según el análisis de contexto <span className="accent">·</span> gestión</h3>
+          <div className="desc" style={{ marginTop: 2 }}>
+            Lectura basada en el contexto de gestión de la obra (madurez del proyecto, permisos,
+            equipo del cliente…), que las dimensiones de diseño no capturan
+          </div>
+        </div>
+        <span className={'badge dot ' + CTX_BANDA_CLASS[resultado.banda]}>
+          Riesgo de gestión {resultado.banda.toLowerCase()}
+        </span>
+      </div>
+      <div className="card-pad">
+        <div className="dim mono" style={{ fontSize: 12 }}>
+          Índice {resultado.indice} = riesgo base {resultado.riesgo_base} × factor del equipo {resultado.factor_amplificador}
+        </div>
+
+        <div style={{ fontWeight: 600, fontSize: 13, margin: '12px 0 4px' }}>¿De dónde viene?</div>
+        {Object.entries(resultado.desglose).map(([clave, d]) => (
+          <div key={clave} style={{ padding: '8px 0', borderBottom: '1px solid var(--border-soft)' }}>
+            <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 600, fontSize: 13 }}>
+                {d.etiqueta}
+                {d.rol === 'amplificador' && <span className="dim" style={{ fontWeight: 400, fontSize: 11.5 }}> · amplificador</span>}
+              </span>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: CTX_PUNTO[d.nivel], flex: '0 0 auto' }}/>
+            </div>
+            <div className="dim" style={{ fontSize: 12, marginTop: 2 }}>{d.opcion_texto}</div>
+          </div>
+        ))}
+
+        <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'var(--blue-soft)', border: '1px solid var(--blue-line)', fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.5 }}>
+          🧭 <strong>Cómo leer las dos juntas:</strong> el modelo mira las <em>dimensiones</em> de la obra;
+          este análisis mira su <em>gestión</em>. Que una dé más alta que la otra no es contradicción:
+          son dos ángulos del mismo riesgo. Léelas en conjunto.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+window.ContextoGestionForm = ContextoGestionForm;
+window.ContextoResultadoCard = ContextoResultadoCard;

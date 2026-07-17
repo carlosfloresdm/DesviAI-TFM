@@ -14,6 +14,10 @@ function ScreenForm({ go, runAnalysis }) {
   const [similares, setSimilares] = React.useState('10 - 15');
   const [fecha, setFecha]     = React.useState('2024-03');
 
+  // Contexto de gestión (checklist opcional — contexto-gestion.jsx).
+  const [ctxIncluir, setCtxIncluir] = React.useState(false);
+  const [ctxChecklist, setCtxChecklist] = React.useState({});
+
   const num = (s) => Number(String(s).replace(/[, $]/g, '')) || 0;
 
   // Costo por m² derivado (sólo informativo; no es input del modelo).
@@ -35,7 +39,7 @@ function ScreenForm({ go, runAnalysis }) {
       proyectos_similares: similares,
       fecha_inicio: fecha,
     };
-    runAnalysis(project);
+    runAnalysis(project, null, ctxIncluir ? ctxChecklist : null);
     go('pipeline');
   };
 
@@ -163,11 +167,19 @@ function ScreenForm({ go, runAnalysis }) {
             </div>
           </div>
 
-          <div className="divider"/>
+        </div>
+      </div>
 
+      {/* Checklist de contexto de gestión, junto con los datos del proyecto */}
+      <ContextoGestionForm avance={avance} incluir={ctxIncluir} setIncluir={setCtxIncluir}
+        checklist={ctxChecklist} setChecklist={setCtxChecklist}/>
+
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="card-pad">
           <div className="row">
             <div className="dim" style={{ fontSize: 12.5 }}>
-              <span className="mono" style={{ color: 'var(--green)', fontWeight: 700 }}>10/10</span> campos · listo para analizar con el modelo real
+              <span className="mono" style={{ color: 'var(--green)', fontWeight: 700 }}>10/10</span> campos
+              {ctxIncluir ? ' · con contexto de gestión' : ''} · listo para analizar con el modelo real
             </div>
             <div className="spacer"/>
             <button className="btn" onClick={() => go('dashboard')}>Cancelar</button>

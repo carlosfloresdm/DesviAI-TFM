@@ -35,13 +35,13 @@ function App() {
     }
   }, [authed]);
 
-  const runAnalysis = async (proj, obraId = null) => {
+  const runAnalysis = async (proj, obraId = null, checklist = null) => {
     setProject(proj);
     setAnalysis(null);
     setAnalysisStatus('loading');
     setAnalysisError('');
     try {
-      const result = await API.analyze(proj, obraId);
+      const result = await API.analyze(proj, obraId, checklist);
       setAnalysis(result);
       setAnalysisStatus('done');
     } catch (e) {

@@ -226,8 +226,9 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
           </div>
         </div>
 
-        {/* Análisis de contexto de gestión (checklist opcional — contexto-gestion.jsx) */}
-        <ContextoGestion project={project}/>
+        {/* Análisis de contexto de gestión: el checklist se responde en la entrada
+            de datos; aquí solo se muestra el resultado (si se incluyó). */}
+        {analysis.contexto && <ContextoResultadoCard resultado={analysis.contexto}/>}
 
         {/* Episodio documentado (evidencia directa) — sólo para obras del histórico */}
         {analysis.episodio && analysis.episodio.existe_evidencia && (
