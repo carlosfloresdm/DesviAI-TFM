@@ -82,6 +82,9 @@ DESVIAI_TFM/
 Ver [`backend/README.md`](backend/README.md) para el detalle de los endpoints, las
 métricas del modelo y el mecanismo del score de riesgo contextual.
 
+📖 **¿Nuevo en el proyecto?** Empieza por [`docs/GUIA_DEL_PROYECTO.md`](docs/GUIA_DEL_PROYECTO.md)
+— explica qué es, cómo funciona y qué hay en cada carpeta, en lenguaje sencillo.
+
 ## El agente con Claude (opcional)
 
 Por defecto el agente corre en modo **`mock`** (determinístico, sin API key). Para usar el
