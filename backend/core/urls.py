@@ -9,6 +9,8 @@ urlpatterns = [
     path('explain', v.explain),
     path('similares', v.similares_view),
     path('score-contextual', v.score_contextual),
+    path('contexto/config', v.contexto_config),
+    path('contexto/calcular', v.contexto_calcular),
     path('historico', v.historico),
     path('atribucion', v.atribucion),
     path('episodio/<int:obra_id>', v.episodio),

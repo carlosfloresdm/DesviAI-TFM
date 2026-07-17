@@ -47,6 +47,8 @@ python manage.py runserver 127.0.0.1:8200
 | POST | `/api/explain` | Descomposición SHAP local + resumen en lenguaje natural |
 | POST | `/api/similares` | k proyectos comparables + desempeño real |
 | POST | `/api/score-contextual` | Score de riesgo contextual (modelo + vecinos + episódica) |
+| GET/POST | `/api/contexto/config` | Preguntas del checklist de contexto de gestión (+ pre-selección si se envía `{project}`) |
+| POST | `/api/contexto/calcular` | Índice de riesgo de contexto de gestión a partir de `{checklist}` |
 | GET | `/api/atribucion` | Tabla de atribución agregada por causa (capa 3, estudio piloto) |
 | GET | `/api/episodio/<id>` | Episodio de una obra (memoria episódica), si existe evidencia |
 | POST | `/api/agent/chat` | Agente conversacional (capa 6): respuesta + traza de tools |
@@ -114,6 +116,26 @@ Determinístico y auditable: cada componente es citable por separado. Si los vec
 tienen episodio documentado, la señal episódica usa **evidencia directa**; si no, cae a
 la tasa de vecinos (**evidencia estadística**, declarada). El LLM narra el score, no lo
 calcula.
+
+## Análisis de contexto de gestión (checklist opcional)
+
+Segunda lectura de riesgo, **paralela** al modelo y al score contextual (no los
+modifica): evalúa el **contexto de gestión** que las dimensiones de diseño no
+capturan (madurez del ejecutivo, permisos, terreno, contrato, cliente). Aporte del
+equipo (plataforma "predictor_obras"), integrado en `core/ml/contexto.py`.
+
+- **Checklist de 8 tipos de riesgo**: el usuario responde preguntas concretas (no
+  niveles abstractos); cada opción tiene un peso normalizado [0,1] oculto.
+- **Fórmula ancla determinística**: los 6 tipos base promedian (escala 0-2), el
+  tipo 8 (equipo/cliente) **multiplica** (factor 0.8-1.3) y el tipo 7 (señales en
+  ejecución) queda diferido hasta que exista bitácora de obra.
+- Pre-selección desde datos ya cargados (`avance_proyecto` → madurez); el usuario
+  siempre puede corregirla.
+- El LLM (futuro) narrará el índice leyendo las notas `contexto-*` de
+  `knowledge/semantica/`; no lo calcula.
+
+Validación: `python eval/eval_contexto.py` corre los 5 casos canónicos de la
+fórmula (piso, dilución, base alta, amplificador, techo).
 
 ## Agente conversacional (capa 6)
 

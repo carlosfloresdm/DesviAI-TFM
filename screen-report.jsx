@@ -36,7 +36,14 @@ function CIBar({ low, high, point }) {
   );
 }
 
-function DevBlock({ titulo, dim, unidadFinal, finalVal }) {
+// El modelo produce DOS salidas que responden preguntas distintas: el % (¿cuánto
+// se desvía? — regresión) y la banda (¿qué tan probable es superar el desvío típico
+// del histórico? — clasificador). No son lo mismo ni una se deriva de la otra; esta
+// frase las fusiona en una sola lectura: la banda habla de probabilidad, el % es la
+// estimación gruesa de magnitud.
+const PROB_TXT = { BAJO: 'Poco probable', MEDIO: 'Probabilidad media de', ALTO: 'Altamente probable' };
+
+function DevBlock({ titulo, dim, unidadFinal, finalVal, sustantivo }) {
   return (
     <div className="deviation">
       <div className="page-eyebrow" style={{ marginBottom: 0 }}>{titulo}</div>
@@ -48,6 +55,10 @@ function DevBlock({ titulo, dim, unidadFinal, finalVal }) {
         Banda <span className={"badge dot " + BANDA_CLASS[dim.riesgo]}>{dim.riesgo}</span>{' · '}
         prob. desvío alto <span className="mono">{Math.round(dim.probabilidad_alto * 100)}%</span>{' · '}
         <span className="mono">{unidadFinal}: {finalVal}</span>
+      </div>
+      <div className="dim" style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 2 }}>
+        {PROB_TXT[dim.riesgo]} un {sustantivo} por encima del típico del histórico.
+        Estimación gruesa: {pctStr(dim.desvio_estimado_pct)}.
       </div>
       <CIBar low={dim.ic80_pct[0]} high={dim.ic80_pct[1]} point={dim.desvio_estimado_pct}/>
     </div>
@@ -110,10 +121,17 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
             </div>
           </div>
           <div className="col" style={{ gap: 14 }}>
-            <DevBlock titulo="Desvío de costo" dim={prediccion.costo}
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 13.5 }}>Según el modelo predictivo</div>
+              <div className="dim" style={{ fontSize: 12 }}>
+                Estimación basada en las <strong>dimensiones de diseño</strong> de la obra
+                (superficie, niveles, presupuesto, sistema constructivo…).
+              </div>
+            </div>
+            <DevBlock titulo="Desvío de costo" dim={prediccion.costo} sustantivo="sobrecosto"
               unidadFinal="presupuesto final est." finalVal={fmt.usd(prediccion.costo.presupuesto_final_est)}/>
             <div className="divider" style={{ margin: 0 }}/>
-            <DevBlock titulo="Desvío de plazo" dim={prediccion.tiempo}
+            <DevBlock titulo="Desvío de plazo" dim={prediccion.tiempo} sustantivo="sobreplazo"
               unidadFinal="plazo final est." finalVal={prediccion.tiempo.tiempo_final_est_dias + ' días'}/>
           </div>
         </div>
@@ -207,6 +225,9 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
             <ScoreRow label="Memoria episódica" peso="0.2" valor={comp.senal_episodica} aporte={sc.aporte_al_score.episodica} color="var(--violet)"/>
           </div>
         </div>
+
+        {/* Análisis de contexto de gestión (checklist opcional — contexto-gestion.jsx) */}
+        <ContextoGestion project={project}/>
 
         {/* Episodio documentado (evidencia directa) — sólo para obras del histórico */}
         {analysis.episodio && analysis.episodio.existe_evidencia && (
