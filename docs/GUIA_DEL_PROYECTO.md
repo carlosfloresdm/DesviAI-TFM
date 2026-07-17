@@ -144,8 +144,9 @@ sueltos, uno por pantalla:
   al modelo: un checklist de preguntas concretas sobre la gestión de la obra (madurez del
   proyecto ejecutivo, permisos, terreno, contrato, cliente) que una fórmula determinística
   convierte en una banda BAJO/MEDIO/ALTO. El modelo mira las *dimensiones* de la obra; este
-  análisis mira su *gestión* — se leen en conjunto, no compiten. Está en el reporte, bajo
-  la tarjeta "Análisis de contexto de gestión".
+  análisis mira su *gestión* — se leen en conjunto, no compiten. El checklist se responde
+  en la **entrada de datos** (junto a los parámetros del proyecto, si el usuario lo activa)
+  y el resultado aparece en el reporte.
 - **Agente conversacional:** responde preguntas usando "herramientas" (SHAP, memorias, kNN)
   y **cita la fuente de cada afirmación**. Su única decisión propia es elegir entre
   *evidencia directa* (si la obra tiene órdenes de cambio) o *evidencia estadística* (si no).
