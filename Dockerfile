@@ -21,5 +21,6 @@ WORKDIR /app/backend
 RUN python core/ml/train.py && python core/ml/gen_memoria.py
 
 EXPOSE 8200
-# runserver es suficiente para una demo local; escucha en 0.0.0.0 para ser accesible desde el host
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8200", "--noreload"]
+# Escucha el puerto que asigne el hosting ($PORT) o 8200 en local.
+# runserver es suficiente para una demo.
+CMD ["sh", "-c", "python manage.py runserver 0.0.0.0:${PORT:-8200} --noreload"]
