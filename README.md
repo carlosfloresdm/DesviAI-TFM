@@ -10,7 +10,18 @@ explica *por qué* una obra se desvía, *qué se hizo bien/mal* y *qué aprender
 de conocimiento es un esquema de archivos `.md` (memoria **semántica / procedural /
 episódica**), sin RAG.
 
-## Puesta en marcha (después de clonar)
+## Opción rápida: Docker (sin instalar Python)
+
+Para **probar el prototipo sin configurar nada** (ideal para revisores):
+
+```
+docker compose up --build     # abrir http://localhost:8200
+```
+
+La primera vez tarda unos minutos (instala todo y entrena el modelo dentro del contenedor).
+Guía detallada para el revisor en [`docs/PROBAR_CON_DOCKER.md`](docs/PROBAR_CON_DOCKER.md).
+
+## Puesta en marcha para desarrollo (después de clonar)
 
 Requisitos: **Python 3.12+** y **git**. En Windows (PowerShell):
 

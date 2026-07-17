@@ -1,0 +1,10 @@
+services:
+  desviai:
+    build: .
+    container_name: desviai
+    ports:
+      - "8200:8200"
+    # Para usar el agente con Claude en vez del modo mock (opcional), descomenta:
+    # environment:
+    #   AGENT_MODE: claude
+    #   ANTHROPIC_API_KEY: "sk-ant-..."

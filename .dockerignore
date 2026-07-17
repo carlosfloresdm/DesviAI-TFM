@@ -1,0 +1,9 @@
+# No enviar al build (más rápido y limpio)
+backend/.venv/
+.venv/
+**/__pycache__/
+**/*.pyc
+.git/
+backend/db.sqlite3
+backend/core/ml/artifacts/
+**/.env
