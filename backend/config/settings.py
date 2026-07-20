@@ -55,6 +55,12 @@ STATICFILES_DIRS = [BASE_DIR.parent]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- Configuración del agente ---
-AGENT_MODE = os.getenv('AGENT_MODE', 'mock')  # 'mock' | 'claude'
-AGENT_MODEL = os.getenv('AGENT_MODEL', 'claude-sonnet-5')  # usado si AGENT_MODE=claude
+# AGENT_MODE elige el proveedor del LLM (Claude y OpenAI son alternativas):
+#   'mock'   -> respuestas determinísticas sin LLM (por defecto, gratis, reproducible)
+#   'claude' -> Anthropic  (requiere ANTHROPIC_API_KEY; modelo AGENT_MODEL)
+#   'openai' -> OpenAI     (requiere OPENAI_API_KEY;    modelo OPENAI_MODEL)
+AGENT_MODE = os.getenv('AGENT_MODE', 'mock')  # 'mock' | 'claude' | 'openai'
+AGENT_MODEL = os.getenv('AGENT_MODEL', 'claude-sonnet-5')  # si AGENT_MODE=claude
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o-mini')     # si AGENT_MODE=openai
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')

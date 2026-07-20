@@ -25,6 +25,7 @@ from core.ml.features import TARGETS
 from core.ml.artifacts_meta import get_metrics
 from core import memory
 from core.agent import service as agent_service
+from core.agent import asistente as asistente_ctx
 
 # Claves mínimas del contrato de entrada.
 CAMPOS_REQUERIDOS = [
@@ -170,6 +171,25 @@ def contexto_calcular(request):
     if errores:
         return _err('Checklist inválido: ' + ' · '.join(errores))
     return JsonResponse({'ok': True, 'contexto': contexto_mod.calcular_indice(checklist)})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def contexto_explicar(request):
+    """Capa interpretativa: explica en lenguaje natural un índice de contexto de
+    gestión ya calculado, apoyándose en la memoria. Modo mock/claude/openai según
+    AGENT_MODE. El número no se recalcula."""
+    try:
+        body = json.loads(request.body or '{}')
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return _err('Cuerpo JSON inválido (se espera JSON codificado en UTF-8).')
+    resultado = body.get('contexto')
+    if not isinstance(resultado, dict) or 'desglose' not in resultado:
+        return _err('Se requiere "contexto" (el resultado de /api/contexto/calcular).')
+    try:
+        return JsonResponse({'ok': True, **asistente_ctx.explicar_riesgo(resultado)})
+    except Exception as exc:  # noqa: BLE001
+        return _err(f'Error explicando el riesgo: {exc}', status=500)
 
 
 @require_http_methods(['GET'])

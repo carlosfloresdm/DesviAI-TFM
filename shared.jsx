@@ -330,6 +330,7 @@ const API = {
   // Análisis de contexto de gestión (checklist opcional del reporte).
   contextoConfig(project)   { return this._post('/contexto/config', { project }); },
   contextoCalcular(checklist) { return this._post('/contexto/calcular', { checklist }); },
+  contextoExplicar(contexto) { return this._post('/contexto/explicar', { contexto }); },
   // Orquesta el análisis. Si obraId no es null (obra del histórico), se excluye a sí
   // misma de los similares/score y se recupera su episodio (evidencia directa).
   // Si el usuario completó el checklist de contexto de gestión en la entrada de
