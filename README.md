@@ -85,15 +85,24 @@ métricas del modelo y el mecanismo del score de riesgo contextual.
 📖 **¿Nuevo en el proyecto?** Empieza por [`docs/GUIA_DEL_PROYECTO.md`](docs/GUIA_DEL_PROYECTO.md)
 — explica qué es, cómo funciona y qué hay en cada carpeta, en lenguaje sencillo.
 
-## El agente con Claude (opcional)
+## El agente con LLM (opcional) — Claude u OpenAI
 
-Por defecto el agente corre en modo **`mock`** (determinístico, sin API key). Para usar el
-LLM real, crear `backend/.env` a partir de `backend/.env.example` y poner:
+Por defecto el agente corre en modo **`mock`** (determinístico, sin API key). Para usar un
+LLM real, crear `backend/.env` a partir de `backend/.env.example`. **Claude y OpenAI son
+alternativas intercambiables** (mismas herramientas, mismo prompt); se elige con `AGENT_MODE`:
 
 ```
+# Opción A — Anthropic (Claude)
 AGENT_MODE=claude
 ANTHROPIC_API_KEY=sk-ant-...
+
+# Opción B — OpenAI (GPT)
+AGENT_MODE=openai
+OPENAI_API_KEY=sk-...
 ```
+
+El mismo interruptor rige la explicación del riesgo de gestión (botón "Explicar este riesgo"
+en el reporte). Si el modo real no tiene su key, cae automáticamente a `mock`.
 
 ## Cómo colaborar
 

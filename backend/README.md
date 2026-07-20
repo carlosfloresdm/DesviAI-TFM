@@ -49,6 +49,7 @@ python manage.py runserver 127.0.0.1:8200
 | POST | `/api/score-contextual` | Score de riesgo contextual (modelo + vecinos + episódica) |
 | GET/POST | `/api/contexto/config` | Preguntas del checklist de contexto de gestión (+ pre-selección si se envía `{project}`) |
 | POST | `/api/contexto/calcular` | Índice de riesgo de contexto de gestión a partir de `{checklist}` |
+| POST | `/api/contexto/explicar` | Explicación en lenguaje natural del índice ya calculado (capa interpretativa, mock/claude/openai) |
 | GET | `/api/atribucion` | Tabla de atribución agregada por causa (capa 3, estudio piloto) |
 | GET | `/api/episodio/<id>` | Episodio de una obra (memoria episódica), si existe evidencia |
 | POST | `/api/agent/chat` | Agente conversacional (capa 6): respuesta + traza de tools |
@@ -131,8 +132,12 @@ equipo (plataforma "predictor_obras"), integrado en `core/ml/contexto.py`.
   ejecución) queda diferido hasta que exista bitácora de obra.
 - Pre-selección desde datos ya cargados (`avance_proyecto` → madurez); el usuario
   siempre puede corregirla.
-- El LLM (futuro) narrará el índice leyendo las notas `contexto-*` de
-  `knowledge/semantica/`; no lo calcula.
+- **Capa interpretativa** (`core/agent/asistente.py`, endpoint `/api/contexto/explicar`):
+  narra el índice ya calculado apoyándose en las notas `contexto-*` de
+  `knowledge/semantica/` y sus procedurales de mitigación (vía wikilinks). **No
+  recalcula el número.** En modo `mock` usa una plantilla determinística (la demo
+  funciona sin API key); con `claude` u `openai` lo redacta el LLM real. En la UI es
+  el botón "Explicar este riesgo" de la tarjeta de resultado.
 
 Validación: `python eval/eval_contexto.py` corre los 5 casos canónicos de la
 fórmula (piso, dilución, base alta, amplificador, techo).
@@ -145,11 +150,17 @@ autónoma es **binaria y auditable**: si la obra tiene episodio documentado, cit
 órdenes de cambio (evidencia directa); si no, usa casos similares + inferencia agregada,
 declarándolo. Cada respuesta incluye la **traza** de tools invocadas.
 
-Dos modos (variable `AGENT_MODE`):
+Tres modos (variable `AGENT_MODE`) — **Claude y OpenAI son alternativas
+intercambiables**: mismas 4 tools, mismo prompt, mismo contrato de salida; solo
+cambia el proveedor del LLM. Si el modo real no tiene su key, cae automáticamente a
+`mock`:
 - `mock` (por defecto) — respuestas determinísticas por plantilla, alimentadas por los
   datos reales de las tools. No requiere API key; la demo y la evaluación son reproducibles.
-- `claude` — usa la API de Anthropic (`ANTHROPIC_API_KEY`, modelo `AGENT_MODEL`). Mismo
-  prompt, mismas tools. Si no hay key, cae automáticamente a `mock`.
+- `claude` — API de Anthropic (`ANTHROPIC_API_KEY`, modelo `AGENT_MODEL`), SDK nativo
+  `anthropic` con tool calling (`core/agent/claude_loop.py`).
+- `openai` — API de OpenAI (`OPENAI_API_KEY`, modelo `OPENAI_MODEL`), SDK nativo
+  `openai` con function calling (`core/agent/openai_loop.py`). El esquema de las tools
+  se traduce del formato Anthropic al de OpenAI.
 
 Petición: `POST /api/agent/chat` con `{project, obra_id?, pregunta, historial?}`.
 
@@ -158,7 +169,10 @@ core/agent/
 ├── tools.py        4 tools + esquema Anthropic + prompt de sistema
 ├── mock.py         agente determinístico (clasifica intención → tools → plantilla)
 ├── claude_loop.py  loop de tool calling real (Anthropic)
-└── service.py      dispatcher mock/claude
+├── openai_loop.py  loop de function calling real (OpenAI) — alternativa a Claude
+├── llm.py          completado simple agnóstico de proveedor (para la capa interpretativa)
+├── asistente.py    capa interpretativa: explica el índice de gestión con memoria
+└── service.py      dispatcher mock/claude/openai
 ```
 
 ## Evaluación del agente (5 casos canónicos)

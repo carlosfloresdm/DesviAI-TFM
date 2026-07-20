@@ -11,6 +11,7 @@ urlpatterns = [
     path('score-contextual', v.score_contextual),
     path('contexto/config', v.contexto_config),
     path('contexto/calcular', v.contexto_calcular),
+    path('contexto/explicar', v.contexto_explicar),
     path('historico', v.historico),
     path('atribucion', v.atribucion),
     path('episodio/<int:obra_id>', v.episodio),

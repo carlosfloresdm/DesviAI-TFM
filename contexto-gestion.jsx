@@ -120,6 +120,27 @@ function ContextoGestionForm({ avance, incluir, setIncluir, checklist, setCheckl
 
 /* ===== Tarjeta del REPORTE (solo resultado, ya calculado en el análisis) ===== */
 function ContextoResultadoCard({ resultado }) {
+  // Explicación con LLM (capa interpretativa): opcional, bajo demanda. Funciona en
+  // modo mock (plantilla determinística) sin API key, y con Claude u OpenAI si se
+  // configuró AGENT_MODE. No recalcula el índice, solo lo narra.
+  const [explicacion, setExplicacion] = React.useState(null);
+  const [estadoLlm, setEstadoLlm] = React.useState(null);
+  const [cargando, setCargando] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
+  const explicar = async () => {
+    setCargando(true); setError(null);
+    try {
+      const data = await API.contextoExplicar(resultado);
+      setExplicacion(data.explicacion);
+      setEstadoLlm(data.estado_llm);
+    } catch (e) {
+      setError('No se pudo generar la explicación: ' + e.message);
+    } finally {
+      setCargando(false);
+    }
+  };
+
   return (
     <div className="card full">
       <div className="card-head">
@@ -152,6 +173,22 @@ function ContextoResultadoCard({ resultado }) {
             <div className="dim" style={{ fontSize: 12, marginTop: 2 }}>{d.opcion_texto}</div>
           </div>
         ))}
+
+        {/* Explicación del riesgo con el LLM (capa interpretativa, bajo demanda) */}
+        <div style={{ marginTop: 14 }}>
+          {!explicacion && (
+            <button className="btn btn-outline" onClick={explicar} disabled={cargando}>
+              {cargando ? 'Analizando la memoria de casos…' : '💬 Explicar este riesgo y sugerir mitigaciones'}
+            </button>
+          )}
+          {error && <div style={{ color: 'var(--red)', fontSize: 13, marginTop: 8 }}>{error}</div>}
+          {explicacion && (
+            <div className="narrative" style={{ marginTop: 4 }}>
+              {explicacion.split('\n').filter(p => p.trim()).map((p, i) => <p key={i}>{p}</p>)}
+              {estadoLlm && <p className="dim" style={{ fontSize: 11.5 }}>{estadoLlm}</p>}
+            </div>
+          )}
+        </div>
 
         <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'var(--blue-soft)', border: '1px solid var(--blue-line)', fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.5 }}>
           🧭 <strong>Cómo leer las dos juntas:</strong> el modelo mira las <em>dimensiones</em> de la obra;
