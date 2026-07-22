@@ -1,10 +1,16 @@
-Django==5.1.*
-pandas
-numpy
-scikit-learn
-shap
-joblib
-openpyxl
-python-dotenv
-anthropic
-openai
+# Dependencias del backend, con versiones FIJADAS a propósito.
+# Render reconstruye e instala en cada deploy: sin pin, siempre bajaría la última
+# versión de cada librería, y un cambio incompatible (sobre todo en el trío
+# numpy/scikit-learn/shap, muy acoplado) podría romper el build o cambiar el modelo.
+# Fijar las versiones garantiza un build reproducible. Para actualizar, subir una
+# versión a la vez y reentrenar (python core/ml/train.py) para verificar.
+Django==5.1.15
+pandas==3.0.3
+numpy==2.4.6
+scikit-learn==1.9.0
+shap==0.51.0
+joblib==1.5.3
+openpyxl==3.1.5
+python-dotenv==1.2.2
+anthropic==0.117.0
+openai==2.46.0
