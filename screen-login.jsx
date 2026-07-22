@@ -44,7 +44,7 @@ function ScreenLogin({ onLogin }) {
             Anticipa la <span style={{ color: 'var(--orange)' }}>desviación de costos</span> antes de poner la primera piedra.
           </h1>
           <p className="login-blurb">
-            Modelo Random Forest entrenado con 200 obras históricas. Explicaciones SHAP, score de riesgo contextual y agente conversacional con memoria y narrativa en lenguaje natural.
+            Modelo Random Forest entrenado con 200 obras históricas. Explicaciones SHAP, análisis de contexto de gestión y agente conversacional con memoria y narrativa en lenguaje natural.
           </p>
 
           <div className="login-preview">

@@ -16,7 +16,7 @@ Tiene **dos partes**:
 1. **El modelo predictivo (ya estaba hecho, no se toca):** un *Random Forest* entrenado con
    200 obras que estima el desvío y una clasificación que asigna banda de riesgo (BAJO /
    MEDIO / ALTO).
-2. **La capa de diagnóstico (lo nuevo del PoC):** memorias, un "score de riesgo contextual"
+2. **La capa de diagnóstico (lo nuevo del PoC):** memorias, un "análisis de contexto de gestión"
    y un agente conversacional que explica *qué se hizo bien, qué se hizo mal y qué aprender*.
 
 ---
@@ -30,10 +30,11 @@ Datos de la obra
       │
   [2] SHAP            → qué variables explican el riesgo (causa estructural)
   [3] Órdenes de cambio (memoria episódica) → qué pasó de verdad (causa de ejecución)
-  [4] Casos similares (kNN)                 → obras parecidas y su desempeño real
+  [4] Análisis de contexto de gestión       → riesgo de gestión (checklist opcional)
   [5] Memorias .md (conceptos, mitigaciones)→ base de conocimiento
       │
   [6] Agente conversacional → junta todo y responde en lenguaje natural, citando la fuente
+      (internamente compara con obras parecidas vía kNN para dar evidencia estadística)
 ```
 
 El diagrama visual está en **[`arquitectura.html`](../arquitectura.html)**
@@ -87,8 +88,8 @@ DESVIAI_TFM/
         │   ├── features.py      Prepara las variables (igual en entrenamiento y uso)
         │   ├── predictor.py     Predice desvío + banda + intervalo de confianza
         │   ├── explainer.py     Explicabilidad SHAP
-        │   ├── similares.py     Busca obras parecidas (kNN)
-        │   ├── score.py         Calcula el score de riesgo contextual
+        │   ├── contexto.py      Análisis de contexto de gestión (checklist 8 tipos)
+        │   ├── similares.py     Busca obras parecidas (kNN) — herramienta interna del agente
         │   ├── historico.py     Resume las 200 obras (para el dashboard)
         │   ├── gen_memoria.py   Genera las órdenes de cambio y los episodios .md
         │   └── artifacts/       Modelos entrenados (.pkl) — se generan, no se suben a git
@@ -113,7 +114,7 @@ sueltos, uno por pantalla:
 | `screen-dashboard.jsx` | Resumen: cartera de 200 obras y distribución de riesgo |
 | `screen-form.jsx` | Formulario para una nueva predicción |
 | `screen-pipeline.jsx` | Animación "analizando…" |
-| `screen-report.jsx` | El reporte con predicción, SHAP, similares y score |
+| `screen-report.jsx` | El reporte con predicción, SHAP y análisis de contexto de gestión |
 | `screen-chat.jsx` / `floating-chat.jsx` | El chat con el agente |
 | `screen-extra.jsx` | Historial y configuración |
 | `shared.jsx` | Piezas comunes + el cliente que llama a la API |
@@ -137,9 +138,10 @@ sueltos, uno por pantalla:
   - **Semántica** = lo que el sistema *sabe* (conceptos).
   - **Procedural** = *cómo se hace* (procedimientos de mitigación).
   - **Episódica** = lo que *pasó* (un episodio por obra, con sus órdenes de cambio).
-- **Score de riesgo contextual:** un número 0-100 que combina, de forma transparente, tres
-  fuentes: el modelo (50%), las obras vecinas (30%) y la memoria episódica (20%). El agente
-  lo *explica*, no lo inventa.
+- **Análisis de contexto de gestión:** un checklist opcional de 8 tipos de riesgo sobre la
+  gestión de la obra (madurez del ejecutivo, permisos, terreno, contrato, cliente…) que una
+  fórmula determinística convierte en una banda BAJO/MEDIO/ALTO. El agente lo *explica*, no
+  lo inventa.
 - **Análisis de contexto de gestión:** una segunda lectura de riesgo, *opcional y paralela*
   al modelo: un checklist de preguntas concretas sobre la gestión de la obra (madurez del
   proyecto ejecutivo, permisos, terreno, contrato, cliente) que una fórmula determinística
@@ -159,7 +161,7 @@ sueltos, uno por pantalla:
 |------------------|-------|
 | El modelo y sus métricas | `backend/core/ml/train.py` y `backend/README.md` |
 | Cómo se prepara una predicción | `backend/core/ml/predictor.py` + `features.py` |
-| El score de riesgo contextual | `backend/core/ml/score.py` |
+| El análisis de contexto de gestión | `backend/core/ml/contexto.py` |
 | El agente y sus herramientas | `backend/core/agent/` |
 | Las memorias | carpeta `knowledge/` (son archivos de texto legibles) |
 | Cómo se evalúa el agente | `backend/eval/run_eval.py` |

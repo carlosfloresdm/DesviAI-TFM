@@ -75,7 +75,7 @@ function ScreenDashboard({ go, historico, openObra }) {
           <div className="card-head">
             <div>
               <h3>Obras recientes</h3>
-              <div className="desc" style={{ marginTop: 2 }}>Clic para abrir el reporte real (predicción, SHAP, similares, score)</div>
+              <div className="desc" style={{ marginTop: 2 }}>Clic para abrir el reporte real (predicción, SHAP, contexto de gestión)</div>
             </div>
             <button className="btn-link" onClick={() => go('history')}>Ver todo →</button>
           </div>
@@ -122,7 +122,7 @@ function ScreenDashboard({ go, historico, openObra }) {
             <div className="card-pad" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <ChecklistItem done text="Modelo predictivo (RF) + SHAP"/>
               <ChecklistItem done text={`Memoria episódica · ${stats.n_con_episodio} obras`}/>
-              <ChecklistItem done text="Score de riesgo contextual"/>
+              <ChecklistItem done text="Análisis de contexto de gestión"/>
               <ChecklistItem done text="Agente conversacional (tool calling)"/>
             </div>
           </div>

@@ -22,9 +22,9 @@ Inicio: 2024-05 · Presupuesto inicial: $5,641,107 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 2.18% (BAJO) | **1.84%** |
-| Desvío de plazo | 6.54% (BAJO) | **7.96%** |
-| Presupuesto final | $5,763,836 | **$5,744,657** |
+| Desvío de costo | 2.28% (BAJO) | **1.84%** |
+| Desvío de plazo | 6.39% (BAJO) | **7.96%** |
+| Presupuesto final | $5,769,834 | **$5,744,657** |
 
 Sobrecosto real: **$103,550 USD** · Sobreplazo real: **37 días**.
 

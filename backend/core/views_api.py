@@ -6,7 +6,6 @@ Endpoints JSON de DesviAI (Fase PoC — Día 1/2).
   GET  /api/shap-global     ranking SHAP global por target
   POST /api/predict         desvío + banda + IC80% (costo y tiempo)
   POST /api/explain         descomposición SHAP local (costo y tiempo)
-  POST /api/similares       k proyectos comparables + desempeño real
 
 Cuerpo POST: el contrato de proyecto (ver PLAN.md §8), JSON.
 """
@@ -17,9 +16,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from core.ml import predictor, explainer, similares
+from core.ml import predictor, explainer
 from core.ml import contexto as contexto_mod
-from core.ml import score as score_mod
 from core.ml import historico as historico_mod
 from core.ml.features import TARGETS
 from core.ml.artifacts_meta import get_metrics
@@ -104,38 +102,6 @@ def explain(request):
                              'explicaciones': {t: explainer.explicar_local(project, t) for t in targets}})
     except Exception as exc:  # noqa: BLE001
         return _err(f'Error en la explicación: {exc}', status=500)
-
-
-@csrf_exempt
-@require_http_methods(['POST'])
-def similares_view(request):
-    project, err = _parse_project(request)
-    if err:
-        return _err(err)
-    body = json.loads(request.body or '{}')
-    k = int(body.get('k', 5))
-    excluir_id = body.get('excluir_id')
-    try:
-        return JsonResponse({'ok': True,
-                             'similares': similares.buscar_similares(project, k=k, excluir_id=excluir_id)})
-    except Exception as exc:  # noqa: BLE001
-        return _err(f'Error buscando similares: {exc}', status=500)
-
-
-@csrf_exempt
-@require_http_methods(['POST'])
-def score_contextual(request):
-    project, err = _parse_project(request)
-    if err:
-        return _err(err)
-    body = json.loads(request.body or '{}')
-    k = int(body.get('k', 5))
-    excluir_id = body.get('excluir_id')
-    try:
-        return JsonResponse({'ok': True,
-                             'score_contextual': score_mod.score_contextual(project, k=k, excluir_id=excluir_id)})
-    except Exception as exc:  # noqa: BLE001
-        return _err(f'Error calculando el score: {exc}', status=500)
 
 
 @csrf_exempt

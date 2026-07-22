@@ -72,7 +72,7 @@ DESVIAI_TFM/
     ├── requirements.txt
     ├── config/            settings, urls
     ├── core/
-    │   ├── ml/            modelo: train, predictor, explainer, similares, score…
+    │   ├── ml/            modelo: train, predictor, explainer, contexto, similares (agente)…
     │   ├── agent/         agente conversacional (tools, mock, loop Claude)
     │   ├── memory.py      lectura de la base de conocimiento .md
     │   └── views_api.py   endpoints JSON
@@ -80,7 +80,7 @@ DESVIAI_TFM/
 ```
 
 Ver [`backend/README.md`](backend/README.md) para el detalle de los endpoints, las
-métricas del modelo y el mecanismo del score de riesgo contextual.
+métricas del modelo y el análisis de contexto de gestión.
 
 📖 **¿Nuevo en el proyecto?** Empieza por [`docs/GUIA_DEL_PROYECTO.md`](docs/GUIA_DEL_PROYECTO.md)
 — explica qué es, cómo funciona y qué hay en cada carpeta, en lenguaje sencillo.
@@ -123,5 +123,5 @@ Evitar commitear el `.venv`, la base de datos ni los artefactos `.pkl` (ya está
 - El **modelo predictivo** (Random Forest + SHAP, notebook `construccion_predictivo.ipynb`)
   y el **dataset** de 200 obras son trabajo previo del equipo; el backend los empaqueta
   fielmente (las métricas coinciden con las del notebook).
-- La **capa de diagnóstico** (memorias `.md`, score de riesgo contextual, agente con tool
+- La **capa de diagnóstico** (memorias `.md`, análisis de contexto de gestión, agente con tool
   calling, evaluación y la conexión de la UI) es el aporte del PoC.

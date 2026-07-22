@@ -22,9 +22,9 @@ Inicio: 2021-02 · Presupuesto inicial: $12,282,461 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 5.69% (MEDIO) | **6.27%** |
-| Desvío de plazo | 17.25% (ALTO) | **24.63%** |
-| Presupuesto final | $12,980,788 | **$13,052,654** |
+| Desvío de costo | 5.72% (MEDIO) | **6.27%** |
+| Desvío de plazo | 17.4% (ALTO) | **24.63%** |
+| Presupuesto final | $12,984,822 | **$13,052,654** |
 
 Sobrecosto real: **$770,193 USD** · Sobreplazo real: **166 días**.
 

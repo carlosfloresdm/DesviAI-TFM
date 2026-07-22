@@ -22,9 +22,9 @@ Inicio: 2023-04 · Presupuesto inicial: $27,662,308 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 1.9% (BAJO) | **1.18%** |
-| Desvío de plazo | 7.26% (BAJO) | **10.87%** |
-| Presupuesto final | $28,189,137 | **$27,988,219** |
+| Desvío de costo | 2.05% (BAJO) | **1.18%** |
+| Desvío de plazo | 7.24% (BAJO) | **10.87%** |
+| Presupuesto final | $28,230,334 | **$27,988,219** |
 
 Sobrecosto real: **$325,911 USD** · Sobreplazo real: **100 días**.
 

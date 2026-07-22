@@ -49,7 +49,7 @@ function ScreenForm({ go, runAnalysis }) {
         <div>
           <div className="page-eyebrow">Nueva predicción · Paso 01 de 04 · Modelo RandomForest + SHAP</div>
           <h1 className="page-title">Datos del proyecto</h1>
-          <div className="page-sub">Sólo variables conocidas al inicio de la obra. El modelo estima el desvío de costo y de plazo, su banda de riesgo y el score contextual.</div>
+          <div className="page-sub">Sólo variables conocidas al inicio de la obra. El modelo estima el desvío de costo y de plazo y su banda de riesgo.</div>
         </div>
         <button className="btn" onClick={() => go('dashboard')}>← Cancelar</button>
       </div>
