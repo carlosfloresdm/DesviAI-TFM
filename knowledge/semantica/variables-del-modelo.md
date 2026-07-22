@@ -7,10 +7,12 @@ relacionados: [bandas-de-riesgo, causas-de-desvio]
 
 # Variables del modelo y su efecto
 
-El modelo (Random Forest, uno por target) usa **17 variables conocidas al inicio de
-la obra**. No usa información futura ni variables macroeconómicas. La importancia de
-cada variable se mide con **SHAP** (TreeSHAP): cuánto mueve, en promedio, la predicción
-del desvío.
+El modelo (Random Forest, uno por target) usa **14 variables conocidas al inicio de
+la obra**. Se excluyen a propósito las variables **temporales** (año/mes/trimestre de
+inicio, que causaban extrapolación a fechas futuras) y las **macroeconómicas** (que
+empeoran la predicción del desvío porcentual); la justificación con evidencia está en
+`docs/decisiones_variables.md`. La importancia de cada variable se mide con **SHAP**
+(TreeSHAP): cuánto mueve, en promedio, la predicción del desvío.
 
 ## Ranking global (impacto medio |SHAP|)
 
@@ -20,7 +22,7 @@ del desvío.
 2. experiencia_alta — equipo con ≥15 proyectos similares
 3. velocidad_obra_m2_dia — m² construidos por día
 4. unidades_por_nivel — densidad del proyecto
-5. año_inicio / mes_inicio — momento del arranque
+5. presupuesto_diario — presupuesto inicial por día de plazo
 
 **Desvío de plazo** (promedio histórico ≈ 12.1 %):
 
