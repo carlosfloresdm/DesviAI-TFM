@@ -331,16 +331,13 @@ const API = {
   contextoConfig(project)   { return this._post('/contexto/config', { project }); },
   contextoCalcular(checklist) { return this._post('/contexto/calcular', { checklist }); },
   contextoExplicar(contexto) { return this._post('/contexto/explicar', { contexto }); },
-  // Orquesta el análisis. Si obraId no es null (obra del histórico), se excluye a sí
-  // misma de los similares/score y se recupera su episodio (evidencia directa).
-  // Si el usuario completó el checklist de contexto de gestión en la entrada de
-  // datos, se calcula aquí y el reporte solo muestra el resultado.
+  // Orquesta el análisis: predicción del modelo + explicación SHAP + (opcional) el
+  // contexto de gestión si el usuario completó el checklist. Si obraId no es null
+  // (obra del histórico), se recupera su episodio (evidencia directa).
   async analyze(project, obraId=null, checklist=null) {
-    const [pred, exp, sim, sc, ctx] = await Promise.all([
+    const [pred, exp, ctx] = await Promise.all([
       this.predict(project),
       this.explain(project),
-      this._post('/similares', { project, k: 5, excluir_id: obraId }),
-      this._post('/score-contextual', { project, excluir_id: obraId }),
       checklist ? this.contextoCalcular(checklist) : Promise.resolve(null),
     ]);
     let episodio = null;
@@ -350,8 +347,6 @@ const API = {
     return {
       prediccion: pred.prediccion,
       explicaciones: exp.explicaciones,
-      similares: sim.similares,
-      score: sc.score_contextual,
       contexto: ctx ? ctx.contexto : null,
       episodio,
       obraId,

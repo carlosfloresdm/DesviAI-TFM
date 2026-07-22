@@ -8,8 +8,8 @@ posteriores, la base de conocimiento y el agente conversacional.
 Django sirve la UI React (raíz del repo) en el **mismo origen** que la API, así que no
 hay CORS. Con el servidor arriba, abrir **http://127.0.0.1:8200/**. Flujo conectado al
 modelo real: login → dashboard (cartera real de 200 obras) → formulario (10 campos del
-modelo) → pipeline → **reporte** (predicción, banda, IC80%, SHAP, similares, desglose del
-score contextual) → **chat** con el agente (tool calling con traza visible).
+modelo) → pipeline → **reporte** (predicción, banda, IC80%, SHAP, análisis de contexto de
+gestión) → **chat** con el agente (tool calling con traza visible).
 
 El dashboard y el historial consumen `/api/historico` (datos reales). Al hacer clic en una
 obra del histórico se abre su **reporte real**; si tiene episodio, aparece la tarjeta de
@@ -45,8 +45,6 @@ python manage.py runserver 127.0.0.1:8200
 | GET | `/api/shap-global` | Ranking SHAP global por target |
 | POST | `/api/predict` | Desvío + banda de riesgo + IC80% (costo y tiempo) |
 | POST | `/api/explain` | Descomposición SHAP local + resumen en lenguaje natural |
-| POST | `/api/similares` | k proyectos comparables + desempeño real |
-| POST | `/api/score-contextual` | Score de riesgo contextual (modelo + vecinos + episódica) |
 | GET/POST | `/api/contexto/config` | Preguntas del checklist de contexto de gestión (+ pre-selección si se envía `{project}`) |
 | POST | `/api/contexto/calcular` | Índice de riesgo de contexto de gestión a partir de `{checklist}` |
 | POST | `/api/contexto/explicar` | Explicación en lenguaje natural del índice ya calculado (capa interpretativa, mock/claude/openai) |
@@ -109,18 +107,9 @@ knowledge/
 en caché. Tras regenerar la memoria episódica, reiniciar el servidor o llamar
 `memory.reload()`.
 
-## Score de riesgo contextual
-
-`score = 100 × (0.5·prob_modelo + 0.3·tasa_vecinos + 0.2·señal_episódica)`
-
-Determinístico y auditable: cada componente es citable por separado. Si los vecinos
-tienen episodio documentado, la señal episódica usa **evidencia directa**; si no, cae a
-la tasa de vecinos (**evidencia estadística**, declarada). El LLM narra el score, no lo
-calcula.
-
 ## Análisis de contexto de gestión (checklist opcional)
 
-Segunda lectura de riesgo, **paralela** al modelo y al score contextual (no los
+Segunda lectura de riesgo, **paralela** al modelo (no lo
 modifica): evalúa el **contexto de gestión** que las dimensiones de diseño no
 capturan (madurez del ejecutivo, permisos, terreno, contrato, cliente). Aporte del
 equipo (plataforma "predictor_obras"), integrado en `core/ml/contexto.py`.
@@ -200,12 +189,14 @@ un número mal citado, una tool omitida o un disclaimer ausente). Con `AGENT_MOD
 evalúa al LLM real con las mismas comprobaciones — ahí el 100% no está garantizado, y esa
 comparación mock-vs-Claude es el valor real del harness.
 
-## Métricas del modelo (validación cruzada, 200 obras)
+## Métricas del modelo (validación cruzada, 200 obras · 14 variables)
 
 | Target | R² (RepeatedKFold) | AUC (clasificación) |
 |--------|--------------------|---------------------|
-| desvío costo | +0.48 | 0.87 |
-| desvío tiempo | +0.35 | 0.85 |
+| desvío costo | +0.48 | 0.86 |
+| desvío tiempo | +0.36 | 0.85 |
 
-Validación de bandas: la banda ALTO concentra ~83% (costo) y ~81% (tiempo) de las
-obras con desvío alto real; la banda BAJO ~14%. Ver `core/ml/artifacts/metrics.json`.
+Modelo de **14 variables** (se excluyen las temporales año/mes/trimestre y las
+macroeconómicas; ver [`docs/decisiones_variables.md`](../docs/decisiones_variables.md)).
+Validación de bandas: la banda ALTO concentra la mayoría de las obras con desvío alto
+real. Valores exactos en `core/ml/artifacts/metrics.json` (se regenera con `train.py`).

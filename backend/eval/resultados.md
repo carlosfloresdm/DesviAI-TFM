@@ -25,7 +25,7 @@
   - [x] declara la fuente
 - **Respuesta:**
 
-  > Estructuralmente, el modelo predice un desvío de costo de 9.76% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+3.11 pts), año de inicio (+0.44 pts), mes de inicio (+0.34 pts). Esta es la causa ex-ante (SHAP, capa 2).
+  > Estructuralmente, el modelo predice un desvío de costo de 9.28% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+3.15 pts), densidad (unidades por nivel) (+0.31 pts), número de unidades (+0.29 pts). Esta es la causa ex-ante (SHAP, capa 2).
   > 
   > En la EJECUCIÓN real, esta obra (id 44) tuvo un desvío de costo de 14.24%, y la evidencia forense DIRECTA (órdenes de cambio) lo atribuye a: cambio de alcance, condición de sitio imprevista, ajuste normativo, proveedor / suministro, con cambio de alcance como causa dominante. Fuente: memoria episódica (órdenes de cambio del proyecto).
 
@@ -39,9 +39,9 @@
   - [x] declara la fuente
 - **Respuesta:**
 
-  > Estructuralmente, el modelo predice un desvío de costo de 5.96% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+1.89 pts), experiencia alta del equipo (+0.14 pts). Esta es la causa ex-ante (SHAP, capa 2).
+  > Estructuralmente, el modelo predice un desvío de costo de 6.47% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+2.12 pts), experiencia alta del equipo (+0.14 pts). Esta es la causa ex-ante (SHAP, capa 2).
   > 
-  > NO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 2 tuvieron desvío de costo alto real (tasa 40%). Fuente: casos similares (capa 4) + patrones agregados (capa 3).
+  > NO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 4 tuvieron desvío de costo alto real (tasa 80%). Entre las comparables con episodio documentado (18), las causas típicas son diseño y alcance. Fuente: casos similares (capa 4) + patrones agregados (capa 3).
 
 ### Caso 3 — Riesgo ALTO — drivers estructurales (SHAP)
 - **Pregunta:** ¿Qué explica el riesgo alto de este proyecto?  ·  obra_id: None  ·  modo: mock
@@ -49,13 +49,13 @@
 - **Checks:** 4/4
   - [x] invoca consultar_shap
   - [x] cita el driver SHAP top ('nivel de avance del proyecto')
-  - [x] cita la predicción (8.09%)
+  - [x] cita la predicción (8.7%)
   - [x] declara la capa/fuente
 - **Respuesta:**
 
-  > Estructuralmente, el modelo predice un desvío de costo de 8.09% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+1.76 pts), velocidad de obra (m²/día) (+0.40 pts), m² por unidad (+0.28 pts). Esta es la causa ex-ante (SHAP, capa 2).
+  > Estructuralmente, el modelo predice un desvío de costo de 8.7% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+1.98 pts), velocidad de obra (m²/día) (+0.40 pts), m² por unidad (+0.30 pts). Esta es la causa ex-ante (SHAP, capa 2).
   > 
-  > NO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 2 tuvieron desvío de costo alto real (tasa 40%). Fuente: casos similares (capa 4) + patrones agregados (capa 3).
+  > NO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 4 tuvieron desvío de costo alto real (tasa 80%). Entre las comparables con episodio documentado (143, 72), las causas típicas son diseño y alcance. Fuente: casos similares (capa 4) + patrones agregados (capa 3).
 
 ### Caso 4 — Riesgo BAJO — ¿qué se hizo bien?
 - **Pregunta:** ¿Qué se hizo bien en esta obra?  ·  obra_id: 127  ·  modo: mock
@@ -67,7 +67,7 @@
   - [x] declara la fuente
 - **Respuesta:**
 
-  > A favor del proyecto (factores que REDUCEN el desvío según SHAP): nivel de avance del proyecto (-2.84 pts), velocidad de obra (m²/día) (-0.39 pts), experiencia alta del equipo (-0.38 pts). Estos son los aspectos estructurales que lo acercan al perfil de bajo desvío. En la ejecución real, la obra 127 cerró con un desvío de costo de 0.28% (riesgo BAJO): confirma que las decisiones estructurales fueron acertadas. Fuente: explicabilidad estructural (capa 2).
+  > A favor del proyecto (factores que REDUCEN el desvío según SHAP): nivel de avance del proyecto (-2.72 pts), experiencia alta del equipo (-0.44 pts), velocidad de obra (m²/día) (-0.38 pts). Estos son los aspectos estructurales que lo acercan al perfil de bajo desvío. En la ejecución real, la obra 127 cerró con un desvío de costo de 0.28% (riesgo BAJO): confirma que las decisiones estructurales fueron acertadas. Fuente: explicabilidad estructural (capa 2).
 
 ### Caso 5 — Mitigación de cambio de alcance (recuperación)
 - **Pregunta:** ¿Cómo mitigo el riesgo de cambio de alcance?  ·  obra_id: None  ·  modo: mock

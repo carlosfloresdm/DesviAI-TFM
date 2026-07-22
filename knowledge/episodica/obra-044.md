@@ -22,9 +22,9 @@ Inicio: 2019-08 · Presupuesto inicial: $13,640,000 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 9.76% (ALTO) | **14.24%** |
-| Desvío de plazo | 17.5% (ALTO) | **20.0%** |
-| Presupuesto final | $14,970,808 | **$15,582,400** |
+| Desvío de costo | 9.28% (ALTO) | **14.24%** |
+| Desvío de plazo | 17.39% (ALTO) | **20.0%** |
+| Presupuesto final | $14,906,027 | **$15,582,400** |
 
 Sobrecosto real: **$1,942,400 USD** · Sobreplazo real: **120 días**.
 

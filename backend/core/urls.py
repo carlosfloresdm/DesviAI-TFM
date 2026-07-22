@@ -7,8 +7,6 @@ urlpatterns = [
     path('shap-global', v.shap_global),
     path('predict', v.predict),
     path('explain', v.explain),
-    path('similares', v.similares_view),
-    path('score-contextual', v.score_contextual),
     path('contexto/config', v.contexto_config),
     path('contexto/calcular', v.contexto_calcular),
     path('contexto/explicar', v.contexto_explicar),

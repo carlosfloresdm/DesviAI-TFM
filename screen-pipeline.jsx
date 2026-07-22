@@ -18,10 +18,9 @@ function ScreenPipeline({ go, status, error }) {
     { ts: '14:32:24', kind: 'agent', text: 'Agente: Analista', detail: 'Random Forest + SHAP' },
     { ts: '14:32:25', kind: 'tool', name: 'predecir',           out: 'RandomForest · desvío costo y plazo' },
     { ts: '14:32:26', kind: 'tool', name: 'explicar_shap',      out: 'TreeSHAP · contribución por variable' },
-    { ts: '14:32:27', kind: 'tool', name: 'buscar_similares',   out: 'kNN · 5 obras comparables' },
-    { ts: '14:32:28', kind: 'tool', name: 'score_contextual',   out: 'modelo + vecinos + episódica' },
+    { ts: '14:32:27', kind: 'tool', name: 'banda_riesgo',       out: 'clasificador · BAJO / MEDIO / ALTO' },
     { ts: '14:32:29', kind: 'llm',  text: 'Analista sintetizando el reporte…' },
-    { ts: '14:32:31', kind: 'done', text: 'Reporte listo · predicción + score + narrativa' },
+    { ts: '14:32:31', kind: 'done', text: 'Reporte listo · predicción + narrativa' },
   ];
 
   React.useEffect(() => {

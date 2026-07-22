@@ -22,9 +22,9 @@ Inicio: 2022-01 · Presupuesto inicial: $20,616,865 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 1.15% (BAJO) | **0.28%** |
-| Desvío de plazo | 5.8% (BAJO) | **2.35%** |
-| Presupuesto final | $20,853,263 | **$20,674,592** |
+| Desvío de costo | 1.09% (BAJO) | **0.28%** |
+| Desvío de plazo | 5.71% (BAJO) | **2.35%** |
+| Presupuesto final | $20,841,127 | **$20,674,592** |
 
 Sobrecosto real: **$57,727 USD** · Sobreplazo real: **18 días**.
 

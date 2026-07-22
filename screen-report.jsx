@@ -1,6 +1,6 @@
 /* eslint-disable */
-// Reporte conectado al modelo real. Renderiza la salida de /api/predict,
-// /api/explain, /api/similares y /api/score-contextual.
+// Reporte conectado al modelo real. Renderiza la salida de /api/predict y
+// /api/explain (más el contexto de gestión si el usuario lo completó).
 
 const BANDA_CLASS = { BAJO: 'low', MEDIO: 'med', ALTO: 'high' };
 const pctStr = (n) => (n > 0 ? '+' : '') + Number(n).toFixed(1) + '%';
@@ -57,8 +57,7 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
     );
   }
 
-  const { prediccion, explicaciones, similares, score } = analysis;
-  const sc = score.dimensiones.costo;
+  const { prediccion, explicaciones } = analysis;
   const expC = explicaciones.desvio_costo;
   const shap = expC.contribuciones;
   const maxAbs = Math.max(...shap.map(s => Math.abs(s.contribucion_pts))) || 1;
@@ -87,27 +86,21 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
 
       <Stepper active="resultado"/>
 
-      {/* Hero: score contextual + desvío de costo y de plazo */}
+      {/* Hero: desvío de costo y de plazo (salida del modelo predictivo) */}
       <div className="risk-hero">
-        <div className="risk-hero-grid">
-          <div className="risk-score">
-            <span className={"badge dot " + BANDA_CLASS[sc.banda]}>Riesgo {sc.banda.toLowerCase()}</span>
-            <div className="risk-score-num">{sc.score}<span className="denom">/100</span></div>
-            <span className="label">Score de riesgo contextual</span>
-            <div className="dim" style={{ fontSize: 12, lineHeight: 1.5, marginTop: 4 }}>
-              Modelo + casos similares + memoria episódica.
-            </div>
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Según el modelo predictivo</div>
+          <div className="dim" style={{ fontSize: 12 }}>
+            Estimación basada en las <strong>dimensiones de diseño</strong> de la obra
+            (superficie, niveles, presupuesto, sistema constructivo…).
           </div>
-          <div className="col" style={{ gap: 14 }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5 }}>Según el modelo predictivo</div>
-              <div className="dim" style={{ fontSize: 12 }}>
-                Estimación basada en las <strong>dimensiones de diseño</strong> de la obra
-                (superficie, niveles, presupuesto, sistema constructivo…).
-              </div>
-            </div>
+        </div>
+        <div className="row" style={{ gap: 28, alignItems: 'stretch', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 220 }}>
             <DevBlock titulo="Desvío de costo" dim={prediccion.costo} sustantivo="sobrecosto"/>
-            <div className="divider" style={{ margin: 0 }}/>
+          </div>
+          <div className="divider" style={{ width: 1, height: 'auto', margin: 0 }}/>
+          <div style={{ flex: 1, minWidth: 220 }}>
             <DevBlock titulo="Desvío de plazo" dim={prediccion.tiempo} sustantivo="sobreplazo"/>
           </div>
         </div>
@@ -148,42 +141,6 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
           </div>
         </div>
 
-        {/* Casos similares */}
-        <div className="card">
-          <div className="card-head">
-            <div>
-              <h3>Proyectos similares <span className="accent">·</span> top {similares.k}</h3>
-              <div className="desc" style={{ marginTop: 2 }}>kNN sobre el histórico · desempeño real</div>
-            </div>
-          </div>
-          <table className="tbl">
-            <thead>
-              <tr><th>ID</th><th>Desv. real</th><th>Sistema</th><th style={{ textAlign: 'right' }}>Evidencia</th></tr>
-            </thead>
-            <tbody>
-              {similares.vecinos.map(r => (
-                <tr key={r.id_proyecto}>
-                  <td className="id">#{r.id_proyecto}</td>
-                  <td className={"num " + (r.desvio_costo_alto ? '' : 'pos')} style={{ color: r.desvio_costo_alto ? 'var(--red)' : 'var(--green)' }}>
-                    {pctStr(r.desvio_costo_real)}
-                  </td>
-                  <td className="dim" style={{ fontSize: 12.5 }}>
-                    {r.sistema_constructivo}
-                    <div className="mono" style={{ color: 'var(--ink-4)', fontSize: 11, marginTop: 2 }}>
-                      {fmt.m2(r.sup_m2)} · {r.niveles} niv
-                    </div>
-                  </td>
-                  <td style={{ textAlign: 'right' }}>
-                    {r.tiene_episodio
-                      ? <span className="badge low" style={{ fontSize: 10 }}>episodio</span>
-                      : <span className="mono dim" style={{ fontSize: 11 }}>—</span>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
         {/* Análisis de contexto de gestión: el checklist se responde en la entrada
             de datos; aquí solo se muestra el resultado (si se incluyó). */}
         {analysis.contexto && <ContextoResultadoCard resultado={analysis.contexto}/>}
@@ -221,10 +178,9 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
             </div>
           </div>
           <div className="narrative">
-            <p>{sc.narrativa}</p>
             <p>{expC.resumen}</p>
             <p className="dim" style={{ fontSize: 12.5 }}>
-              ¿Dudas sobre este reporte? Abre el chat con el agente (abajo a la derecha) para preguntar por los drivers, los casos similares o cómo mitigar el riesgo.
+              ¿Dudas sobre este reporte? Abre el chat con el agente (abajo a la derecha) para preguntar por los drivers, los casos comparables o cómo mitigar el riesgo.
             </p>
           </div>
         </div>

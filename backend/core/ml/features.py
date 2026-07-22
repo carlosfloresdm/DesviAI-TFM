@@ -19,11 +19,18 @@ EXPERIENCIA_ALTA_RANGES = {'15 - 20', '20 +'}
 # (primero alfabéticamente) y deja una sola columna dummy para 'Concreto Tradicional'.
 SISTEMA_COLS = ['sistema_constructivo_Concreto Tradicional']
 
-# Orden EXACTO de las 17 features que consume el modelo. Congelado a propósito.
+# Orden EXACTO de las 14 features que consume el modelo. Congelado a propósito.
+# Variables EXCLUIDAS a propósito (ver docs/decisiones_variables.md):
+#   · Temporales (año/mes/trimestre de inicio): el año causaba extrapolación a
+#     fechas futuras y ninguna aportaba señal generalizable (mejoran levemente las
+#     4 métricas al quitarlas). La fecha se sigue pidiendo (dato del informe) pero
+#     no entra al modelo.
+#   · Macroeconómicas: empeoran el modelo en toda configuración probada (al predecir
+#     el desvío PORCENTUAL, el efecto macro ya está en el presupuesto base y se cancela).
 FEATURES = [
     'sup_m2', 'niveles', 'unidades', 'presupuesto_inicial', 'tiempo_inicial',
     'unidades_por_nivel', 'm2_por_unidad', 'velocidad_obra_m2_dia', 'presupuesto_diario',
-    'duracion_meses', 'año_inicio', 'mes_inicio', 'trimestre_inicio',
+    'duracion_meses',
     'avance_ord', 'experiencia_alta', 'nivel_acabado_ord',
 ] + SISTEMA_COLS
 
@@ -36,12 +43,10 @@ PROHIBIDAS = ['costo_m2', 'monto_oc', 'presupuesto_final', 'tiempo_final']
 def _add_engineered_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Añade las columnas derivadas comunes (ratios, fechas, ordinales)."""
     df = df.copy()
+    # periodo_inicio se conserva para el split temporal (obras antiguas primero),
+    # pero año/mes/trimestre YA NO se derivan como features (ver docs/decisiones_variables.md).
     df['periodo_inicio'] = pd.PeriodIndex(pd.to_datetime(df['fecha_inicio']), freq='M')
     df['duracion_meses'] = (df['tiempo_inicial'] / 30.44).round().astype(int)
-
-    df['año_inicio'] = df['periodo_inicio'].dt.year
-    df['mes_inicio'] = df['periodo_inicio'].dt.month
-    df['trimestre_inicio'] = df['mes_inicio'].apply(lambda m: (m - 1) // 3 + 1)
 
     df['unidades_por_nivel'] = df['unidades'] / df['niveles']
     df['m2_por_unidad'] = df['sup_m2'] / df['unidades']
@@ -57,7 +62,7 @@ def engineer_training(df_raw: pd.DataFrame):
     Prepara el dataset completo para entrenar.
 
     Devuelve:
-      X          -> DataFrame con las 17 features, ORDENADO temporalmente
+      X          -> DataFrame con las 14 features, ORDENADO temporalmente
       y          -> DataFrame con los 2 targets, mismo orden que X
       df_ord     -> dataset completo (features + originales + periodo), mismo orden
     """
@@ -98,7 +103,7 @@ def engineer_one(project: dict) -> pd.DataFrame:
     proyectos_similares, fecha_inicio ('YYYY-MM').
     """
     p = project
-    periodo = pd.Period(p['fecha_inicio'], freq='M')
+    pd.Period(p['fecha_inicio'], freq='M')  # valida el formato de fecha; ya no es feature
     duracion_meses = int(round(p['tiempo_inicial'] / 30.44))
 
     feats = {
@@ -112,9 +117,6 @@ def engineer_one(project: dict) -> pd.DataFrame:
         'velocidad_obra_m2_dia': p['sup_m2'] / p['tiempo_inicial'],
         'presupuesto_diario': p['presupuesto_inicial'] / p['tiempo_inicial'],
         'duracion_meses': duracion_meses,
-        'año_inicio': periodo.year,
-        'mes_inicio': periodo.month,
-        'trimestre_inicio': (periodo.month - 1) // 3 + 1,
         'avance_ord': AVANCE_ORD[p['avance_proyecto']],
         'experiencia_alta': 1 if p.get('proyectos_similares') in EXPERIENCIA_ALTA_RANGES else 0,
         'nivel_acabado_ord': NIVEL_ACABADO_ORD.get(p.get('nivel_acabado', 'Medio'), 1),

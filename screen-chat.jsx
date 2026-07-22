@@ -14,11 +14,11 @@ function ScreenChat({ go, project, analysis }) {
 
   const saludo = (() => {
     if (analysis) {
-      const sc = analysis.score.dimensiones.costo;
       const c = analysis.prediccion.costo;
-      return `Hola 👋  El reporte está listo. Resumen:\n\n• Score de riesgo contextual: ${sc.score}/100 (${sc.banda})\n• Desvío de costo estimado: ${(c.desvio_estimado_pct>0?'+':'')}${c.desvio_estimado_pct.toFixed(1)}% (IC80% [${c.ic80_pct[0]}%, ${c.ic80_pct[1]}%])\n\nPregúntame por los drivers, los casos similares o cómo mitigar el riesgo.`;
+      const p = analysis.prediccion.tiempo;
+      return `Hola 👋  El reporte está listo. Resumen:\n\n• Desvío de costo estimado: ${(c.desvio_estimado_pct>0?'+':'')}${c.desvio_estimado_pct.toFixed(1)}% (riesgo ${c.riesgo}, IC80% [${c.ic80_pct[0]}%, ${c.ic80_pct[1]}%])\n• Desvío de plazo estimado: ${(p.desvio_estimado_pct>0?'+':'')}${p.desvio_estimado_pct.toFixed(1)}% (riesgo ${p.riesgo})\n\nPregúntame por los drivers, los casos comparables o cómo mitigar el riesgo.`;
     }
-    return 'Hola 👋  Pregúntame lo que quieras sobre este proyecto: drivers del riesgo, casos similares o mitigaciones.';
+    return 'Hola 👋  Pregúntame lo que quieras sobre este proyecto: drivers del riesgo, casos comparables o mitigaciones.';
   })();
 
   const [messages, setMessages] = React.useState([{ who: 'agent', text: saludo }]);

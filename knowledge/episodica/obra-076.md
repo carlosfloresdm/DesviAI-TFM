@@ -22,9 +22,9 @@ Inicio: 2020-11 · Presupuesto inicial: $28,450,755 USD.
 
 | | Modelo (estimación) | Real |
 |---|---|---|
-| Desvío de costo | 1.42% (BAJO) | **0.28%** |
-| Desvío de plazo | 7.07% (BAJO) | **7.2%** |
-| Presupuesto final | $28,853,691 | **$28,530,417** |
+| Desvío de costo | 1.46% (BAJO) | **0.28%** |
+| Desvío de plazo | 7.05% (BAJO) | **7.2%** |
+| Presupuesto final | $28,864,954 | **$28,530,417** |
 
 Sobrecosto real: **$79,662 USD** · Sobreplazo real: **58 días**.
 
