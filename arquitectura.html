@@ -98,8 +98,8 @@
         <span class="badge closed">Cerrado · sin cambios</span>
         <div class="lbl">Capa predictiva</div>
         <h3 class="ttl">Modelo Random Forest + clasificación de riesgo</h3>
-        <p class="desc">Un Random Forest por target (desvío de costo y de plazo) sobre 200 obras y 17 variables conocidas al inicio. Una regresión logística clasifica cada obra en banda BAJO / MEDIO / ALTO. Entrega desvío estimado, banda y probabilidad.</p>
-        <div class="tags"><span class="tag">R² costo 0.48 · plazo 0.35</span><span class="tag">AUC 0.87 / 0.85</span><span class="tag">IC80% por árboles del RF</span></div>
+        <p class="desc">Un Random Forest por target (desvío de costo y de plazo) sobre 200 obras y 14 variables conocidas al inicio. Una regresión logística clasifica cada obra en banda BAJO / MEDIO / ALTO. Entrega desvío estimado, banda y probabilidad.</p>
+        <div class="tags"><span class="tag">R² costo 0.48 · plazo 0.36</span><span class="tag">AUC 0.86 / 0.85</span><span class="tag">IC80% por árboles del RF</span></div>
       </div>
     </div>
 
@@ -128,7 +128,7 @@
       <div class="card">
         <div class="lbl">Casos comparables</div>
         <h3 class="ttl">Nearest neighbors (kNN)</h3>
-        <p class="desc">Los 3–5 proyectos históricos más parecidos y su desempeño real (desvío final, si tuvieron desvío alto, si tienen episodio). Evidencia empírica de respaldo y un insumo del score contextual.</p>
+        <p class="desc">Los 3–5 proyectos históricos más parecidos y su desempeño real (desvío final, si tuvieron desvío alto, si tienen episodio). Herramienta interna del agente para respaldar la ruta de evidencia estadística.</p>
         <div class="tags"><span class="tag">kNN sobre features estandarizadas</span></div>
       </div>
     </div>
@@ -152,7 +152,7 @@
       <div class="card">
         <div class="lbl">Capa conversacional · agéntica acotada</div>
         <h3 class="ttl">Agente experto — síntesis y recomendación</h3>
-        <p class="desc">Decide vía <em>tool calling</em> qué evidencia consultar. Cada afirmación cita su fuente. Modo <code>mock</code> determinístico (sin API key) o <code>claude</code> (mismo prompt y tools).</p>
+        <p class="desc">Decide vía <em>tool calling</em> qué evidencia consultar. Cada afirmación cita su fuente. Modo <code>mock</code> determinístico (sin API key), o LLM real <code>claude</code>/<code>openai</code> (mismo prompt y tools).</p>
         <div class="tools">
           <div class="tool"><span class="fn">consultar_shap()</span><span class="d">Explicabilidad (capa 2)</span></div>
           <div class="tool"><span class="fn">buscar_episodio()</span><span class="d">Evidencia forense (capa 3)</span></div>
@@ -169,15 +169,14 @@
 
   </div>
 
-  <!-- Score contextual -->
+  <!-- Análisis de contexto de gestión -->
   <div class="card" style="margin-top:22px;border-color:var(--orange)">
-    <div class="lbl" style="color:var(--orange)">Score de riesgo contextual · determinístico y citable</div>
-    <h3 class="ttl">El mecanismo del score</h3>
-    <p class="desc">Combina las tres fuentes de evidencia. El LLM lo <em>narra</em>; no lo calcula. Cada componente es citable por separado.</p>
+    <div class="lbl" style="color:var(--orange)">Análisis de contexto de gestión · determinístico y citable</div>
+    <h3 class="ttl">El mecanismo del checklist</h3>
+    <p class="desc">Lectura opcional, paralela al modelo (no lo corrige): un checklist de 8 tipos de riesgo de gestión que las variables de diseño no capturan. Fórmula ancla determinística; el LLM la <em>narra</em>, no la calcula.</p>
     <div class="formula">
-      score = 100 × ( <span class="w">0.5</span>·prob_modelo <span class="k">(capa 1)</span>
-      + <span class="w">0.3</span>·tasa_vecinos <span class="k">(capa 4)</span>
-      + <span class="w">0.2</span>·señal_episódica <span class="k">(memoria episódica)</span> )
+      índice = <span class="w">promedio</span>(6 tipos base, escala 0–2) × <span class="w">factor</span> equipo/cliente <span class="k">(0.8–1.3)</span>
+      <span class="k">· tipo 7 (señales en ejecución) diferido</span>
     </div>
   </div>
 
