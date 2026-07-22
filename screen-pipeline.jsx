@@ -10,8 +10,8 @@ function ScreenPipeline({ go, status, error }) {
 
   const lines = [
     { ts: '14:32:18', kind: 'sys',  text: 'Inicio del pipeline · payload validado (10/10 campos OK)' },
-    { ts: '14:32:19', kind: 'agent', text: 'Agente: Ingesta', detail: 'ingeniería de variables → vector(17)' },
-    { ts: '14:32:20', kind: 'tool', name: 'normalizar_inputs', out: 'OK · 17 features del modelo' },
+    { ts: '14:32:19', kind: 'agent', text: 'Agente: Ingesta', detail: 'ingeniería de variables → vector(14)' },
+    { ts: '14:32:20', kind: 'tool', name: 'normalizar_inputs', out: 'OK · 14 features del modelo' },
     { ts: '14:32:21', kind: 'agent', text: 'Agente: Validador', detail: 'rangos y consistencia' },
     { ts: '14:32:22', kind: 'tool', name: 'validar_rangos', out: 'OK · sin outliers' },
     { ts: '14:32:23', kind: 'tool', name: 'validar_consistencia', out: 'OK · dentro de rango histórico' },
