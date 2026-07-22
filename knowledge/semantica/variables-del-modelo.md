@@ -7,28 +7,30 @@ relacionados: [bandas-de-riesgo, causas-de-desvio]
 
 # Variables del modelo y su efecto
 
-El modelo (Random Forest, uno por target) usa **17 variables conocidas al inicio de
-la obra**. No usa información futura ni variables macroeconómicas. La importancia de
-cada variable se mide con **SHAP** (TreeSHAP): cuánto mueve, en promedio, la predicción
-del desvío.
+El modelo (Random Forest, uno por target) usa **14 variables conocidas al inicio de
+la obra**. No usa información futura, ni variables temporales (año, mes o trimestre
+de inicio), ni variables macroeconómicas: ambas familias fueron evaluadas y
+excluidas con evidencia empírica de validación cruzada (ver
+`docs/decisiones_variables.md`). La importancia de cada variable se mide con
+**SHAP** (TreeSHAP): cuánto mueve, en promedio, la predicción del desvío.
 
 ## Ranking global (impacto medio |SHAP|)
 
 **Desvío de costo** (promedio histórico ≈ 4.9 %):
 
 1. **avance_ord** — nivel de avance del proyecto · *dominante, ~2.2 pts*
-2. experiencia_alta — equipo con ≥15 proyectos similares
+2. unidades_por_nivel — densidad del proyecto
 3. velocidad_obra_m2_dia — m² construidos por día
-4. unidades_por_nivel — densidad del proyecto
-5. año_inicio / mes_inicio — momento del arranque
+4. presupuesto_diario — intensidad de gasto
+5. m2_por_unidad — tamaño medio de la unidad
 
 **Desvío de plazo** (promedio histórico ≈ 12.1 %):
 
 1. **avance_ord** — *aún más dominante, ~4.3 pts*
 2. presupuesto_diario
-3. experiencia_alta
-4. velocidad_obra_m2_dia
-5. presupuesto_inicial
+3. presupuesto_inicial
+4. unidades_por_nivel
+5. niveles
 
 ## Lecturas clave
 
@@ -38,6 +40,9 @@ del desvío.
   reduce el desvío al cruzar ese umbral.
 - El **sistema constructivo** (postensado vs. tradicional) aporta muy poco por sí solo:
   el riesgo se explica más por la configuración del proyecto que por la técnica.
+- **La fecha de inicio no influye en la predicción.** Se solicita al usuario y figura
+  como dato descriptivo en el informe, pero no entra al modelo: una misma obra
+  cargada con fecha de 2024, 2026 o 2027 produce un resultado idéntico.
 
 ## Cómo usar esto en un diagnóstico
 
