@@ -173,7 +173,8 @@ sueltos, uno por pantalla:
 ## 7. Lo que es y lo que no es
 
 - **Es** un *prototipo* (PoC) para demostrar la idea, deliberadamente simple y auditable.
-- El **dataset** son 200 obras (50 reales + 150 sintéticas) y las **órdenes de cambio** son
-  un *estudio piloto reconstruido* para ~20% de las obras — declarado como tal, no oculto.
+- El **dataset** son 200 obras (10 reales + 190 sintéticas, generadas a partir de los patrones
+  de las reales) y las **órdenes de cambio** son un *estudio piloto reconstruido* para ~20% de
+  las obras — declarado como tal, no oculto.
 - El **agente** funciona en modo "mock" (sin IA) por defecto para que la demo sea gratis y
   reproducible; con una API key de Anthropic se activa la versión con IA real.
