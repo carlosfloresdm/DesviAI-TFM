@@ -331,6 +331,26 @@ const API = {
   contextoConfig(project)   { return this._post('/contexto/config', { project }); },
   contextoCalcular(checklist) { return this._post('/contexto/calcular', { checklist }); },
   contextoExplicar(contexto) { return this._post('/contexto/explicar', { contexto }); },
+  // Descarga el reporte generado en el backend (blob → descarga en el navegador).
+  async _download(path, body, filename) {
+    const r = await fetch(this.base + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      let msg = 'HTTP ' + r.status;
+      try { const j = await r.json(); msg = j.error || msg; } catch (e) {}
+      throw new Error(msg);
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    a.remove(); URL.revokeObjectURL(url);
+  },
+  exportExcel(body) { return this._download('/export/excel', body, 'desviai_reporte.xlsx'); },
+  exportPdf(body)   { return this._download('/export/pdf', body, 'desviai_reporte.pdf'); },
   // Orquesta el análisis: predicción del modelo + explicación SHAP + (opcional) el
   // contexto de gestión si el usuario completó el checklist. Si obraId no es null
   // (obra del histórico), se recupera su episodio (evidencia directa).
