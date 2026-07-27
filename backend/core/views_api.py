@@ -12,7 +12,7 @@ Cuerpo POST: el contrato de proyecto (ver PLAN.md §8), JSON.
 from __future__ import annotations
 import json
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -22,6 +22,7 @@ from core.ml import historico as historico_mod
 from core.ml.features import TARGETS
 from core.ml.artifacts_meta import get_metrics
 from core import memory
+from core import export as export_mod
 from core.agent import service as agent_service
 from core.agent import asistente as asistente_ctx
 
@@ -182,6 +183,60 @@ def episodio(request, obra_id):
     return JsonResponse({'ok': True, 'existe_evidencia': True,
                          'obra_id': int(obra_id), 'meta': doc['meta'],
                          'contenido': doc['body'], 'path': doc['path']})
+
+
+def _datos_reporte(request):
+    """Parsea el cuerpo y recalcula lo necesario para exportar el reporte.
+
+    Devuelve (datos, error). `datos` = (project, pred, exp, contexto, episodio).
+    El contexto de gestión llega ya calculado desde el frontend (es determinístico);
+    la predicción y el SHAP se recalculan aquí para que el archivo sea autoritativo.
+    """
+    project, err = _parse_project(request)
+    if err:
+        return None, err
+    body = json.loads(request.body or '{}')
+    contexto = body.get('contexto') if isinstance(body.get('contexto'), dict) else None
+    obra_id = body.get('obra_id')
+    pred = predictor.predecir_proyecto(project)
+    exp = {t: explainer.explicar_local(project, t) for t in TARGETS}
+    episodio = memory.get_episodio(int(obra_id)) if obra_id is not None else None
+    if episodio:
+        episodio = {'obra_id': int(obra_id), 'meta': episodio['meta']}
+    return (project, pred, exp, contexto, episodio), None
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def export_excel(request):
+    """Genera y descarga el reporte en Excel (.xlsx)."""
+    datos, err = _datos_reporte(request)
+    if err:
+        return _err(err)
+    try:
+        contenido = export_mod.build_excel(*datos)
+    except Exception as exc:  # noqa: BLE001
+        return _err(f'Error generando el Excel: {exc}', status=500)
+    resp = HttpResponse(contenido,
+                        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    resp['Content-Disposition'] = 'attachment; filename="desviai_reporte.xlsx"'
+    return resp
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def export_pdf(request):
+    """Genera y descarga el reporte en PDF."""
+    datos, err = _datos_reporte(request)
+    if err:
+        return _err(err)
+    try:
+        contenido = export_mod.build_pdf(*datos)
+    except Exception as exc:  # noqa: BLE001
+        return _err(f'Error generando el PDF: {exc}', status=500)
+    resp = HttpResponse(contenido, content_type='application/pdf')
+    resp['Content-Disposition'] = 'attachment; filename="desviai_reporte.pdf"'
+    return resp
 
 
 @csrf_exempt

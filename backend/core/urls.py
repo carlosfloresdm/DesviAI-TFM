@@ -13,5 +13,7 @@ urlpatterns = [
     path('historico', v.historico),
     path('atribucion', v.atribucion),
     path('episodio/<int:obra_id>', v.episodio),
+    path('export/excel', v.export_excel),
+    path('export/pdf', v.export_pdf),
     path('agent/chat', v.agent_chat),
 ]

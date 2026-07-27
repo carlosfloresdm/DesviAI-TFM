@@ -62,6 +62,27 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
   const shap = expC.contribuciones;
   const maxAbs = Math.max(...shap.map(s => Math.abs(s.contribucion_pts))) || 1;
 
+  // Exportación: genera el archivo en el backend a partir del proyecto actual
+  // (recalcula predicción + SHAP) y el contexto de gestión si el usuario lo completó.
+  const [exporting, setExporting] = React.useState(null); // 'pdf' | 'xls' | null
+  const exportar = async (kind) => {
+    setExporting(kind);
+    const body = { project, obra_id: analysis.obraId, contexto: analysis.contexto || null };
+    try {
+      if (kind === 'pdf') {
+        await API.exportPdf(body);
+        showToast({ kind: 'pdf', title: 'Reporte PDF descargado', subtitle: 'desviai_reporte.pdf' });
+      } else {
+        await API.exportExcel(body);
+        showToast({ kind: 'xls', title: 'Reporte Excel descargado', subtitle: 'desviai_reporte.xlsx' });
+      }
+    } catch (e) {
+      showToast({ kind, title: 'No se pudo exportar', subtitle: e.message });
+    } finally {
+      setExporting(null);
+    }
+  };
+
   return (
     <div className="screen">
       <div className="page-head">
@@ -75,11 +96,11 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
           </div>
         </div>
         <div className="export-btns">
-          <button className="export-btn" onClick={() => showToast({ kind: 'pdf', title: 'Generando reporte PDF…', subtitle: 'desviai_reporte.pdf' })}>
-            <span className="doc-icon pdf">PDF</span><span>Exportar PDF</span>
+          <button className="export-btn" onClick={() => exportar('pdf')} disabled={exporting}>
+            <span className="doc-icon pdf">PDF</span><span>{exporting === 'pdf' ? 'Generando…' : 'Exportar PDF'}</span>
           </button>
-          <button className="export-btn" onClick={() => showToast({ kind: 'xls', title: 'Generando reporte Excel…', subtitle: 'desviai_data.xlsx' })}>
-            <span className="doc-icon xls">XLS</span><span>Exportar Excel</span>
+          <button className="export-btn" onClick={() => exportar('xls')} disabled={exporting}>
+            <span className="doc-icon xls">XLS</span><span>{exporting === 'xls' ? 'Generando…' : 'Exportar Excel'}</span>
           </button>
         </div>
       </div>
