@@ -125,3 +125,7 @@ Evitar commitear el `.venv`, la base de datos ni los artefactos `.pkl` (ya está
   fielmente (las métricas coinciden con las del notebook).
 - La **capa de diagnóstico** (memorias `.md`, análisis de contexto de gestión, agente con tool
   calling, evaluación y la conexión de la UI) es el aporte del PoC.
+
+## Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT** — ver [`LICENSE`](LICENSE).
