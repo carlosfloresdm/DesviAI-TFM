@@ -107,6 +107,23 @@ function ScreenReport({ go, showToast, project, analysis, status }) {
 
       <Stepper active="resultado"/>
 
+      {/* Aviso: valores fuera del rango histórico → el modelo extrapola (no bloquea) */}
+      {analysis.advertencias && analysis.advertencias.length > 0 && (
+        <div className="card" style={{ borderLeft: '3px solid var(--amber)', background: 'var(--amber-soft)', padding: '12px 16px', marginBottom: 14 }}>
+          <div style={{ fontWeight: 700, fontSize: 13, color: '#92580A', marginBottom: 4 }}>
+            ⚠ Valores fuera del rango histórico del modelo
+          </div>
+          <div style={{ fontSize: 12.5, lineHeight: 1.5, color: 'var(--ink-3)' }}>
+            El modelo se entrenó con obras dentro de ciertos rangos; con estos valores <strong>extrapola</strong> y la estimación es menos fiable:
+          </div>
+          <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+            {analysis.advertencias.map((a, i) => (
+              <li key={i} style={{ fontSize: 12.5, marginBottom: 2, color: 'var(--ink-3)' }}>{a.mensaje}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Hero: desvío de costo y de plazo (salida del modelo predictivo) */}
       <div className="risk-hero">
         <div style={{ marginBottom: 14 }}>
