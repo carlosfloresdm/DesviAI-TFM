@@ -19,6 +19,7 @@ from django.views.decorators.http import require_http_methods
 from core.ml import predictor, explainer
 from core.ml import contexto as contexto_mod
 from core.ml import historico as historico_mod
+from core.ml import validacion
 from core.ml.features import TARGETS
 from core.ml.artifacts_meta import get_metrics
 from core import memory
@@ -44,6 +45,10 @@ def _parse_project(request):
     faltan = [c for c in CAMPOS_REQUERIDOS if c not in project]
     if faltan:
         return None, f'Faltan campos requeridos: {", ".join(faltan)}'
+    # Errores duros: valores no numéricos o ≤ 0 (impiden predecir; evita el crash).
+    errs = validacion.errores(project)
+    if errs:
+        return None, ' '.join(errs)
     return project, None
 
 
@@ -84,7 +89,9 @@ def predict(request):
     if err:
         return _err(err)
     try:
-        return JsonResponse({'ok': True, 'prediccion': predictor.predecir_proyecto(project)})
+        return JsonResponse({'ok': True,
+                             'prediccion': predictor.predecir_proyecto(project),
+                             'advertencias': validacion.advertencias(project)})
     except Exception as exc:  # noqa: BLE001
         return _err(f'Error en la predicción: {exc}', status=500)
 
@@ -254,6 +261,9 @@ def agent_chat(request):
     faltan = [c for c in CAMPOS_REQUERIDOS if c not in project]
     if faltan:
         return _err(f'Faltan campos del proyecto: {", ".join(faltan)}')
+    errs = validacion.errores(project)
+    if errs:
+        return _err(' '.join(errs))
     try:
         resultado = agent_service.run_agent(
             project, obra_id=body.get('obra_id'),

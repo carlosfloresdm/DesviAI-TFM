@@ -368,6 +368,7 @@ const API = {
       prediccion: pred.prediccion,
       explicaciones: exp.explicaciones,
       contexto: ctx ? ctx.contexto : null,
+      advertencias: pred.advertencias || [],
       episodio,
       obraId,
     };
