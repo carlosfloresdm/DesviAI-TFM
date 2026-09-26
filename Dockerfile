@@ -19,6 +19,9 @@ COPY . .
 #    (reproducible: no dependemos de archivos generados en la máquina de origen)
 WORKDIR /app/backend
 RUN python core/ml/train.py && python core/ml/gen_memoria.py
+# 4) Regenera los datos de los grafos de memoria (menú «Memoria del agente») con la memoria recién generada.
+#    Si fallara, se conservan los datos que ya trae el repo y el despliegue sigue.
+RUN python ../presentacion/grafos/build_data.py || echo "Aviso: grafos de memoria no regenerados; se usan los del repo"
 
 EXPOSE 8200
 # Escucha el puerto que asigne el hosting ($PORT) o 8200 en local.
