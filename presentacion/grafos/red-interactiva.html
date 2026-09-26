@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Red de memorias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --font: 'Manrope', 'Segoe UI', system-ui, sans-serif; --mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace; }
+  :root[data-theme="dark"] {
+    --bg0: #101a36; --bg1: #050813; --ink: #eef2fa; --ink2: #c6cedf; --muted: #8b96ad;
+    --panel: rgba(13, 20, 40, .80); --panelline: rgba(148, 163, 184, .22); --chip: rgba(148, 163, 184, .10);
+    --edge: rgba(148, 163, 184, .22); --edgec: rgba(251, 146, 60, .20); --edget: rgba(148, 163, 184, .12);
+    --halo: rgba(5, 8, 19, .88); --star: #cfd8ff; --neb: .22;
+    --epi: #60a5fa; --sem: #a78bfa; --proc: #34d399; --acc: #fb923c; --risk: #f87171; --warn: #fbbf24; --ok: #4ade80; --tag: #94a3b8;
+    --c1: #f472b6; --c2: #fb923c; --c3: #facc15; --c4: #2dd4bf; --c5: #a3e635; --c6: #38bdf8;
+  }
+  :root[data-theme="light"] {
+    --bg0: #ffffff; --bg1: #eef0f4; --ink: #111827; --ink2: #374151; --muted: #6b7280;
+    --panel: rgba(255, 255, 255, .90); --panelline: #e1e4ea; --chip: rgba(17, 24, 39, .05);
+    --edge: rgba(71, 85, 105, .22); --edgec: rgba(243, 108, 36, .22); --edget: rgba(71, 85, 105, .12);
+    --halo: rgba(246, 247, 250, .92); --star: #000; --neb: .06;
+    --epi: #1F65E5; --sem: #6D52E0; --proc: #16A34A; --acc: #F36C24; --risk: #DC2626; --warn: #D97706; --ok: #16A34A; --tag: #64748b;
+    --c1: #DB2777; --c2: #EA580C; --c3: #CA8A04; --c4: #0D9488; --c5: #65A30D; --c6: #0284C7;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg1); font-family: var(--font); color: var(--ink); }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; }
+
+  .glass { background: var(--panel); border: 1px solid var(--panelline); border-radius: 16px;
+           backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 18px 50px rgba(0, 0, 0, .18); }
+
+  /* columna izquierda: título, ficha de la nota seleccionada, leyenda */
+  #left { position: fixed; left: 28px; top: 26px; bottom: 22px; width: 360px; display: flex; flex-direction: column;
+          gap: 14px; pointer-events: none; z-index: 2; }
+  #left > * { pointer-events: auto; }
+  #head .kick { font: 800 11px var(--font); letter-spacing: .18em; color: var(--muted); text-transform: uppercase; }
+  #head .kick b { color: var(--acc); font-weight: 800; }
+  #head h1 { margin: 6px 0 6px; font: 800 27px/1.15 var(--font); letter-spacing: -.02em; white-space: nowrap; }
+  #head p { margin: 0; font: 500 14px/1.5 var(--font); color: var(--muted); }
+  #head p b { color: var(--ink2); font-weight: 700; }
+  #head, #legend { pointer-events: none; }
+  #legend .item { pointer-events: auto; }
+
+  #info { padding: 18px 20px 16px; min-height: 0; overflow: auto; display: none; animation: pop .22s ease-out; }
+  #info.on { display: block; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.985); } to { opacity: 1; transform: none; } }
+  #info .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  #info .tipo { font: 800 10.5px var(--font); letter-spacing: .16em; text-transform: uppercase; }
+  #info .x { border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 2px; }
+  #info h2 { margin: 8px 0 4px; font: 800 19px/1.25 var(--font); }
+  #info .src { font: 500 11.5px var(--mono); color: var(--muted); word-break: break-all; }
+  #info .txt { margin: 12px 0 0; font: 500 13.5px/1.55 var(--font); color: var(--ink2); }
+  #info .warn { margin-top: 12px; padding: 9px 12px; border-radius: 10px; font: 700 12.5px/1.45 var(--font);
+                color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+  #info .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  #info .kpi { background: var(--chip); border-radius: 10px; padding: 8px 10px; }
+  #info .kpi .k { font: 800 9.5px var(--font); letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+  #info .kpi .v { font: 800 16px var(--font); margin-top: 2px; }
+  #info ol { margin: 10px 0 0; padding-left: 20px; font: 500 13px/1.5 var(--font); color: var(--ink2); }
+  #info .grp { margin-top: 14px; }
+  #info .grp .k { font: 800 10px var(--font); letter-spacing: .13em; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--panelline); background: var(--chip);
+          color: var(--ink2); border-radius: 999px; padding: 3px 9px 3px 7px; font: 600 11.5px var(--font); cursor: pointer; }
+  .chip:hover { color: var(--ink); border-color: var(--muted); }
+  .chip.off { opacity: .45; cursor: default; }
+  .chip i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .chip small { color: var(--muted); font-weight: 700; }
+
+  #legend { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
+  #legend .ttl { font: 800 10px var(--font); letter-spacing: .15em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+  #legend .item { display: flex; align-items: center; gap: 9px; font: 600 13px var(--font); color: var(--ink2); cursor: pointer;
+                  width: fit-content; padding: 2px 8px 2px 2px; border-radius: 8px; user-select: none; }
+  #legend .item:hover { background: var(--chip); }
+  #legend .item.off { opacity: .35; }
+  #legend .item i { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: 0 0 10px currentColor; }
+  #legend .item small { color: var(--muted); font-weight: 700; font-family: var(--mono); font-size: 11px; }
+  #legend .note { font: 500 11.5px var(--font); color: var(--muted); margin-top: 6px; }
+
+  /* barra superior derecha */
+  #tools { position: fixed; right: 24px; top: 24px; display: flex; gap: 8px; align-items: center; z-index: 3; }
+  #tools .glass { border-radius: 12px; }
+  #search { display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 40px; width: 250px; }
+  #search svg { flex: none; color: var(--muted); }
+  #search input { border: 0; outline: 0; background: none; color: var(--ink); font: 600 13.5px var(--font); width: 100%; }
+  #search input::placeholder { color: var(--muted); }
+  .btn { height: 40px; min-width: 40px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+         font: 700 13px var(--font); color: var(--ink2); cursor: pointer; }
+  .btn:hover, .btn.on { color: var(--ink); }
+  .btn.on { border-color: var(--acc); }
+
+  #settings { position: fixed; right: 24px; top: 74px; width: 300px; padding: 16px 18px 18px; z-index: 3; display: none;
+              max-height: calc(100vh - 100px); overflow: auto; animation: pop .2s ease-out; }
+  #settings.on { display: block; }
+  #settings h3 { margin: 14px 0 8px; font: 800 10.5px var(--font); letter-spacing: .15em; color: var(--muted); text-transform: uppercase; }
+  #settings h3:first-child { margin-top: 0; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 7px 0; font: 600 13px var(--font); color: var(--ink2); }
+  .row input[type=range] { width: 130px; accent-color: var(--acc); }
+  .row output { font: 600 11px var(--mono); color: var(--muted); width: 38px; text-align: right; }
+  .sw { position: relative; width: 36px; height: 20px; flex: none; }
+  .sw input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .sw span { position: absolute; inset: 0; border-radius: 999px; background: var(--chip); border: 1px solid var(--panelline); cursor: pointer; transition: .15s; }
+  .sw span::after { content: ''; position: absolute; left: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); transition: .15s; }
+  .sw input:checked + span { background: color-mix(in srgb, var(--acc) 30%, transparent); border-color: var(--acc); }
+  .sw input:checked + span::after { left: 18px; background: var(--acc); }
+  .seg { display: flex; background: var(--chip); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg button { flex: 1; border: 0; background: none; color: var(--muted); font: 700 12px var(--font); padding: 6px 4px; border-radius: 7px; cursor: pointer; }
+  .seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .15); }
+  .acts { display: flex; gap: 8px; margin-top: 14px; }
+  .acts button { flex: 1; height: 34px; border-radius: 9px; border: 1px solid var(--panelline); background: var(--chip); color: var(--ink2);
+                 font: 700 12.5px var(--font); cursor: pointer; }
+  .acts button:hover { color: var(--ink); border-color: var(--muted); }
+
+  #hint { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); padding: 9px 16px; border-radius: 999px; z-index: 2;
+          font: 600 12.5px var(--font); color: var(--muted); white-space: nowrap; transition: opacity .6s; }
+  #hint b { color: var(--ink2); font-weight: 800; }
+  #stats { position: fixed; right: 26px; bottom: 24px; font: 600 11.5px var(--mono); color: var(--muted); z-index: 2; text-align: right; }
+
+  .export #tools, .export #settings, .export #hint { display: none !important; }
+  @media (max-width: 900px) {
+    #left { width: auto; right: 16px; left: 16px; top: 16px; }
+    #head h1 { font-size: 22px; } #head p { display: none; }
+    #tools { top: auto; bottom: 16px; right: 16px; } #search { width: 170px; } #hint, #stats { display: none; }
+    #settings { top: auto; bottom: 66px; right: 16px; left: 16px; width: auto; max-height: 55vh; }
+    #legend { display: none; } #info { max-height: 42vh; }
+  }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="left">
+  <div id="head">
+    <div class="kick">Desvi<b>AI</b> · Bóveda de memorias</div>
+    <h1>La memoria como red de notas</h1>
+    <p id="sub"></p>
+  </div>
+  <div id="info" class="glass"></div>
+  <div id="legend"></div>
+</div>
+
+<div id="tools">
+  <button class="glass btn" id="bBack" title="Volver a las vistas 1-3 (teclas 1, 2, 3)">← Vistas 1-3</button>
+  <label id="search" class="glass">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="q" placeholder="Buscar nota…  (obra-118, diseño…)" autocomplete="off" spellcheck="false">
+  </label>
+  <button class="glass btn" id="bFit" title="Encuadrar (F)">⤢</button>
+  <button class="glass btn" id="bTheme" title="Tema (T)">◐</button>
+  <button class="glass btn" id="bSet" title="Ajustes del grafo (G)">⚙ Ajustes</button>
+</div>
+
+<div id="settings" class="glass">
+  <h3>Mostrar</h3>
+  <div class="row">Conceptos (causas)<label class="sw"><input type="checkbox" data-k="show.causa"><span></span></label></div>
+  <div class="row">Etiquetas #tags<label class="sw"><input type="checkbox" data-k="show.tag"><span></span></label></div>
+  <div class="row">Flechas de dirección<label class="sw"><input type="checkbox" data-k="arrows"><span></span></label></div>
+  <div class="row">Partículas en enlaces<label class="sw"><input type="checkbox" data-k="particles"><span></span></label></div>
+  <div class="row">Texto a partir de zoom<input type="range" min="0.3" max="2.5" step="0.05" data-k="labelZoom"><output></output></div>
+  <h3>Colorear episodios por</h3>
+  <div class="seg" data-seg="colorBy"><button data-v="memoria">Memoria</button><button data-v="causa">Causa dominante</button><button data-v="riesgo">Riesgo</button></div>
+  <h3>Al seleccionar resaltar</h3>
+  <div class="seg" data-seg="depth"><button data-v="1">Vecinos directos</button><button data-v="2">Hasta 2 saltos</button></div>
+  <h3>Fuerzas</h3>
+  <div class="row">Repulsión<input type="range" min="40" max="700" step="10" data-k="f.repel"><output></output></div>
+  <div class="row">Distancia enlaces<input type="range" min="15" max="220" step="5" data-k="f.dist"><output></output></div>
+  <div class="row">Fuerza enlaces<input type="range" min="0.05" max="1.5" step="0.05" data-k="f.link"><output></output></div>
+  <div class="row">Gravedad al centro<input type="range" min="0" max="0.25" step="0.01" data-k="f.gravity"><output></output></div>
+  <div class="row">Fijar nodo al soltar<label class="sw"><input type="checkbox" data-k="pin"><span></span></label></div>
+  <div class="acts"><button id="bHeat">Reanimar (R)</button><button id="bUnpin">Soltar fijados</button></div>
+</div>
+
+<div id="hint" class="glass"><b>Clic</b> selecciona · <b>arrastra</b> un nodo para moverlo · arrastra el fondo para desplazar · <b>rueda</b> zoom · doble clic centra · <b>T</b> tema · <b>F</b> encuadrar</div>
+<div id="stats"></div>
+
+<script id="graph-data" type="application/json">{"documentos":[{"name":"obra-013","memoria":"episodica","titulo":"Obra 013 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","sitio","alcance"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio"],"extracto":"Proyecto de 15,620 m², 16 niveles, 112 unidades. Inicio: 2020-08 · Presupuesto inicial: $9,580,400 USD. Sobrecosto real: $384,230 USD · Sobreplazo real: 54 días. Cambio de alcance: 65% del sobrecosto ($248,534) Condición de sitio imprevista: 35% del sobrecosto ($135,696) La causa dominante de esta…","fuente":"episodica/obra-013.md","obra_id":13},{"name":"obra-015","memoria":"episodica","titulo":"Obra 015 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno"],"extracto":"Proyecto de 11,230 m², 18 niveles, 54 unidades. Inicio: 2022-11 · Presupuesto inicial: $8,945,200 USD. Sobrecosto real: $157,650 USD · Sobreplazo real: 62 días. Error u omisión de diseño: 100% del sobrecosto ($157,650) La causa dominante de esta obra fue error u omisión de diseño. Ver…","fuente":"episodica/obra-015.md","obra_id":15},{"name":"obra-017","memoria":"episodica","titulo":"Obra 017 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","normativa"],"links":["causas-de-desvio"],"extracto":"Proyecto de 9,120 m², 14 niveles, 36 unidades. Inicio: 2016-08 · Presupuesto inicial: $6,348,000 USD. Sobrecosto real: $128,350 USD · Sobreplazo real: 35 días. Ajuste normativo: 100% del sobrecosto ($128,350) La causa dominante de esta obra fue ajuste normativo. Ver procedimientos de mitigación en…","fuente":"episodica/obra-017.md","obra_id":17},{"name":"obra-018","memoria":"episodica","titulo":"Obra 018 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","proveedor","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 38,650 m², 28 niveles, 336 unidades. Inicio: 2017-01 · Presupuesto inicial: $27,520,000 USD. Sobrecosto real: $973,800 USD · Sobreplazo real: 72 días. Error u omisión de diseño: 58% del sobrecosto ($561,393) Proveedor / suministro: 42% del sobrecosto ($412,407) La causa dominante de…","fuente":"episodica/obra-018.md","obra_id":18},{"name":"obra-023","memoria":"episodica","titulo":"Obra 023 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","diseno","normativa","sitio","desviacion-alta"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 10,450 m², 16 niveles, 42 unidades. Inicio: 2018-01 · Presupuesto inicial: $7,648,000 USD. Sobrecosto real: $677,600 USD · Sobreplazo real: 216 días. Error u omisión de diseño: 59% del sobrecosto ($398,414) Condición de sitio imprevista: 26% del sobrecosto ($176,778) Ajuste normativo:…","fuente":"episodica/obra-023.md","obra_id":23},{"name":"obra-034","memoria":"episodica","titulo":"Obra 034 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","clima"],"links":["causas-de-desvio"],"extracto":"Proyecto de 11,890 m², 14 niveles, 96 unidades. Inicio: 2022-10 · Presupuesto inicial: $6,284,000 USD. Sobrecosto real: $188,200 USD · Sobreplazo real: 38 días. Clima: 100% del sobrecosto ($188,200) La causa dominante de esta obra fue clima. Ver procedimientos de mitigación en causas-de-desvio.","fuente":"episodica/obra-034.md","obra_id":34},{"name":"obra-035","memoria":"episodica","titulo":"Obra 035 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno","sitio"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 31,460 m², 26 niveles, 288 unidades. Inicio: 2022-05 · Presupuesto inicial: $23,140,000 USD. Sobrecosto real: $866,800 USD · Sobreplazo real: 72 días. Error u omisión de diseño: 66% del sobrecosto ($572,607) Condición de sitio imprevista: 34% del sobrecosto ($294,193) La causa dominante…","fuente":"episodica/obra-035.md","obra_id":35},{"name":"obra-044","memoria":"episodica","titulo":"Obra 044 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","alcance","sitio","normativa","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-proveedores"],"extracto":"Proyecto de 24,080 m², 20 niveles, 192 unidades. Inicio: 2019-08 · Presupuesto inicial: $13,640,000 USD. Sobrecosto real: $1,942,400 USD · Sobreplazo real: 120 días. Cambio de alcance: 43% del sobrecosto ($844,880) Proveedor / suministro: 25% del sobrecosto ($482,132) Condición de sitio imprevista:…","fuente":"episodica/obra-044.md","obra_id":44},{"name":"obra-056","memoria":"episodica","titulo":"Obra 056 — Concreto Tradicional, acabado Medio","tags":["concreto-tradicional","normativa"],"links":["causas-de-desvio"],"extracto":"Proyecto de 21,038 m², 14 niveles, 106 unidades. Inicio: 2019-09 · Presupuesto inicial: $16,102,718 USD. Sobrecosto real: $253,010 USD · Sobreplazo real: 52 días. Ajuste normativo: 100% del sobrecosto ($253,010) La causa dominante de esta obra fue ajuste normativo. Ver procedimientos de mitigación…","fuente":"episodica/obra-056.md","obra_id":56},{"name":"obra-068","memoria":"episodica","titulo":"Obra 068 — Concreto Postensado, acabado Alto","tags":["concreto-postensado","sitio","alcance","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-proveedores"],"extracto":"Proyecto de 12,524 m², 12 niveles, 106 unidades. Inicio: 2020-09 · Presupuesto inicial: $7,246,691 USD. Sobrecosto real: $564,900 USD · Sobreplazo real: 63 días. Cambio de alcance: 43% del sobrecosto ($245,339) Proveedor / suministro: 34% del sobrecosto ($191,132) Condición de sitio imprevista: 23%…","fuente":"episodica/obra-068.md","obra_id":68},{"name":"obra-072","memoria":"episodica","titulo":"Obra 072 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","diseno","proveedor"],"links":["causas-de-desvio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 27,280 m², 17 niveles, 53 unidades. Inicio: 2023-12 · Presupuesto inicial: $15,987,358 USD. Sobrecosto real: $526,072 USD · Sobreplazo real: 147 días. Error u omisión de diseño: 62% del sobrecosto ($327,211) Proveedor / suministro: 38% del sobrecosto ($198,861) La causa dominante de…","fuente":"episodica/obra-072.md","obra_id":72},{"name":"obra-076","memoria":"episodica","titulo":"Obra 076 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno"],"extracto":"Proyecto de 51,882 m², 36 niveles, 497 unidades. Inicio: 2020-11 · Presupuesto inicial: $28,450,755 USD. Sobrecosto real: $79,662 USD · Sobreplazo real: 58 días. Error u omisión de diseño: 100% del sobrecosto ($79,662) La causa dominante de esta obra fue error u omisión de diseño. Ver…","fuente":"episodica/obra-076.md","obra_id":76},{"name":"obra-082","memoria":"episodica","titulo":"Obra 082 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","proveedor","diseno","sitio","desviacion-alta"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 54,654 m², 41 niveles, 566 unidades. Inicio: 2020-03 · Presupuesto inicial: $27,965,252 USD. Sobrecosto real: $1,820,571 USD · Sobreplazo real: 159 días. Error u omisión de diseño: 43% del sobrecosto ($776,477) Proveedor / suministro: 34% del sobrecosto ($614,101) Condición de sitio…","fuente":"episodica/obra-082.md","obra_id":82},{"name":"obra-085","memoria":"episodica","titulo":"Obra 085 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","sitio"],"links":["causas-de-desvio","mitigacion-condicion-sitio"],"extracto":"Proyecto de 14,265 m², 12 niveles, 191 unidades. Inicio: 2020-10 · Presupuesto inicial: $8,984,484 USD. Sobrecosto real: $40,368 USD · Sobreplazo real: 18 días. Condición de sitio imprevista: 100% del sobrecosto ($40,368) La causa dominante de esta obra fue condición de sitio imprevista. Ver…","fuente":"episodica/obra-085.md","obra_id":85},{"name":"obra-087","memoria":"episodica","titulo":"Obra 087 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno","alcance","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 46,845 m², 35 niveles, 306 unidades. Inicio: 2017-10 · Presupuesto inicial: $21,072,576 USD. Sobrecosto real: $1,632,150 USD · Sobreplazo real: 57 días. Cambio de alcance: 44% del sobrecosto ($720,117) Error u omisión de diseño: 33% del sobrecosto ($540,768) Proveedor / suministro: 23%…","fuente":"episodica/obra-087.md","obra_id":87},{"name":"obra-091","memoria":"episodica","titulo":"Obra 091 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","alcance","diseno","normativa","sitio","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 14,654 m², 12 niveles, 137 unidades. Inicio: 2019-10 · Presupuesto inicial: $6,507,817 USD. Sobrecosto real: $856,529 USD · Sobreplazo real: 77 días. Cambio de alcance: 36% del sobrecosto ($311,935) Error u omisión de diseño: 32% del sobrecosto ($273,518) Condición de sitio imprevista:…","fuente":"episodica/obra-091.md","obra_id":91},{"name":"obra-104","memoria":"episodica","titulo":"Obra 104 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","alcance"],"links":["causas-de-desvio","mitigacion-cambio-alcance"],"extracto":"Proyecto de 49,813 m², 36 niveles, 176 unidades. Inicio: 2017-09 · Presupuesto inicial: $31,260,106 USD. Sobrecosto real: $615,202 USD · Sobreplazo real: 69 días. Cambio de alcance: 100% del sobrecosto ($615,202) La causa dominante de esta obra fue cambio de alcance. Ver procedimientos de…","fuente":"episodica/obra-104.md","obra_id":104},{"name":"obra-107","memoria":"episodica","titulo":"Obra 107 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","sitio","diseno","desviacion-alta"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 39,742 m², 31 niveles, 257 unidades. Inicio: 2023-03 · Presupuesto inicial: $23,154,132 USD. Sobrecosto real: $1,264,280 USD · Sobreplazo real: 20 días. Error u omisión de diseño: 67% del sobrecosto ($845,208) Condición de sitio imprevista: 33% del sobrecosto ($419,072) La causa…","fuente":"episodica/obra-107.md","obra_id":107},{"name":"obra-108","memoria":"episodica","titulo":"Obra 108 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno"],"extracto":"Proyecto de 42,618 m², 34 niveles, 405 unidades. Inicio: 2022-01 · Presupuesto inicial: $20,616,865 USD. Sobrecosto real: $57,727 USD · Sobreplazo real: 18 días. Error u omisión de diseño: 100% del sobrecosto ($57,727) La causa dominante de esta obra fue error u omisión de diseño. Ver…","fuente":"episodica/obra-108.md","obra_id":108},{"name":"obra-118","memoria":"episodica","titulo":"Obra 118 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","diseno","sitio","alcance","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 48,509 m², 38 niveles, 161 unidades. Inicio: 2019-12 · Presupuesto inicial: $25,938,669 USD. Sobrecosto real: $3,177,418 USD · Sobreplazo real: 147 días. Error u omisión de diseño: 30% del sobrecosto ($955,725) Cambio de alcance: 29% del sobrecosto ($912,107) Proveedor / suministro: 23%…","fuente":"episodica/obra-118.md","obra_id":118},{"name":"obra-120","memoria":"episodica","titulo":"Obra 120 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","alcance","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-proveedores"],"extracto":"Proyecto de 28,303 m², 22 niveles, 75 unidades. Inicio: 2018-07 · Presupuesto inicial: $15,438,298 USD. Sobrecosto real: $778,837 USD · Sobreplazo real: 54 días. Cambio de alcance: 61% del sobrecosto ($477,283) Proveedor / suministro: 39% del sobrecosto ($301,554) La causa dominante de esta obra…","fuente":"episodica/obra-120.md","obra_id":120},{"name":"obra-126","memoria":"episodica","titulo":"Obra 126 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","alcance","sitio","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-proveedores"],"extracto":"Proyecto de 28,975 m², 22 niveles, 376 unidades. Inicio: 2023-11 · Presupuesto inicial: $17,046,010 USD. Sobrecosto real: $1,515,947 USD · Sobreplazo real: 124 días. Cambio de alcance: 52% del sobrecosto ($790,688) Proveedor / suministro: 25% del sobrecosto ($371,508) Condición de sitio imprevista:…","fuente":"episodica/obra-126.md","obra_id":126},{"name":"obra-127","memoria":"episodica","titulo":"Obra 127 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","sitio"],"links":["causas-de-desvio","mitigacion-condicion-sitio"],"extracto":"Proyecto de 27,964 m², 23 niveles, 392 unidades. Inicio: 2020-07 · Presupuesto inicial: $20,655,504 USD. Sobrecosto real: $57,835 USD · Sobreplazo real: 61 días. Condición de sitio imprevista: 100% del sobrecosto ($57,835) La causa dominante de esta obra fue condición de sitio imprevista. Ver…","fuente":"episodica/obra-127.md","obra_id":127},{"name":"obra-128","memoria":"episodica","titulo":"Obra 128 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","normativa"],"links":["causas-de-desvio"],"extracto":"Proyecto de 38,982 m², 34 niveles, 513 unidades. Inicio: 2018-08 · Presupuesto inicial: $29,249,737 USD. Sobrecosto real: $865,860 USD · Sobreplazo real: 0 días. Ajuste normativo: 100% del sobrecosto ($865,860) La causa dominante de esta obra fue ajuste normativo. Ver procedimientos de mitigación…","fuente":"episodica/obra-128.md","obra_id":128},{"name":"obra-133","memoria":"episodica","titulo":"Obra 133 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno","clima","sitio","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 11,314 m², 12 niveles, 85 unidades. Inicio: 2020-09 · Presupuesto inicial: $5,875,061 USD. Sobrecosto real: $591,820 USD · Sobreplazo real: 140 días. Error u omisión de diseño: 37% del sobrecosto ($218,195) Condición de sitio imprevista: 30% del sobrecosto ($178,585) Proveedor /…","fuente":"episodica/obra-133.md","obra_id":133},{"name":"obra-139","memoria":"episodica","titulo":"Obra 139 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","proveedor"],"links":["causas-de-desvio","mitigacion-proveedores"],"extracto":"Proyecto de 28,819 m², 22 niveles, 193 unidades. Inicio: 2024-06 · Presupuesto inicial: $13,375,748 USD. Sobrecosto real: $396,202 USD · Sobreplazo real: 177 días. Proveedor / suministro: 100% del sobrecosto ($396,202) La causa dominante de esta obra fue proveedor / suministro. Ver procedimientos…","fuente":"episodica/obra-139.md","obra_id":139},{"name":"obra-143","memoria":"episodica","titulo":"Obra 143 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","sitio","diseno","alcance","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 19,629 m², 14 niveles, 50 unidades. Inicio: 2021-11 · Presupuesto inicial: $11,279,935 USD. Sobrecosto real: $1,116,350 USD · Sobreplazo real: 120 días. Cambio de alcance: 40% del sobrecosto ($441,870) Error u omisión de diseño: 39% del sobrecosto ($437,276) Condición de sitio…","fuente":"episodica/obra-143.md","obra_id":143},{"name":"obra-145","memoria":"episodica","titulo":"Obra 145 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno","alcance","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-error-diseno"],"extracto":"Proyecto de 47,064 m², 34 niveles, 359 unidades. Inicio: 2018-06 · Presupuesto inicial: $31,869,130 USD. Sobrecosto real: $1,570,251 USD · Sobreplazo real: 75 días. Cambio de alcance: 52% del sobrecosto ($813,279) Error u omisión de diseño: 48% del sobrecosto ($756,972) La causa dominante de esta…","fuente":"episodica/obra-145.md","obra_id":145},{"name":"obra-151","memoria":"episodica","titulo":"Obra 151 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","sitio","alcance","proveedor","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-proveedores"],"extracto":"Proyecto de 26,270 m², 16 niveles, 125 unidades. Inicio: 2021-02 · Presupuesto inicial: $12,282,461 USD. Sobrecosto real: $770,193 USD · Sobreplazo real: 166 días. Cambio de alcance: 54% del sobrecosto ($413,004) Proveedor / suministro: 24% del sobrecosto ($187,817) Condición de sitio imprevista:…","fuente":"episodica/obra-151.md","obra_id":151},{"name":"obra-155","memoria":"episodica","titulo":"Obra 155 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno"],"extracto":"Proyecto de 41,032 m², 29 niveles, 310 unidades. Inicio: 2019-07 · Presupuesto inicial: $27,178,147 USD. Sobrecosto real: $469,039 USD · Sobreplazo real: 108 días. Error u omisión de diseño: 100% del sobrecosto ($469,039) La causa dominante de esta obra fue error u omisión de diseño. Ver…","fuente":"episodica/obra-155.md","obra_id":155},{"name":"obra-164","memoria":"episodica","titulo":"Obra 164 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","proveedor","sitio","alcance","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-proveedores"],"extracto":"Proyecto de 50,657 m², 38 niveles, 207 unidades. Inicio: 2019-02 · Presupuesto inicial: $30,799,034 USD. Sobrecosto real: $2,216,866 USD · Sobreplazo real: 130 días. Cambio de alcance: 48% del sobrecosto ($1,054,600) Proveedor / suministro: 27% del sobrecosto ($608,639) Condición de sitio…","fuente":"episodica/obra-164.md","obra_id":164},{"name":"obra-165","memoria":"episodica","titulo":"Obra 165 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","proveedor"],"links":["causas-de-desvio","mitigacion-proveedores"],"extracto":"Proyecto de 12,539 m², 14 niveles, 36 unidades. Inicio: 2018-09 · Presupuesto inicial: $7,020,485 USD. Sobrecosto real: $199,703 USD · Sobreplazo real: 56 días. Proveedor / suministro: 100% del sobrecosto ($199,703) La causa dominante de esta obra fue proveedor / suministro. Ver procedimientos de…","fuente":"episodica/obra-165.md","obra_id":165},{"name":"obra-167","memoria":"episodica","titulo":"Obra 167 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","proveedor","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 17,951 m², 14 niveles, 61 unidades. Inicio: 2023-02 · Presupuesto inicial: $10,453,148 USD. Sobrecosto real: $357,373 USD · Sobreplazo real: 30 días. Error u omisión de diseño: 56% del sobrecosto ($200,345) Proveedor / suministro: 44% del sobrecosto ($157,028) La causa dominante de esta…","fuente":"episodica/obra-167.md","obra_id":167},{"name":"obra-168","memoria":"episodica","titulo":"Obra 168 — Concreto Postensado, acabado Medio","tags":["concreto-postensado","diseno","sitio","alcance","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 47,921 m², 40 niveles, 286 unidades. Inicio: 2023-06 · Presupuesto inicial: $28,858,181 USD. Sobrecosto real: $2,070,086 USD · Sobreplazo real: 98 días. Cambio de alcance: 44% del sobrecosto ($905,583) Error u omisión de diseño: 34% del sobrecosto ($701,030) Condición de sitio…","fuente":"episodica/obra-168.md","obra_id":168},{"name":"obra-170","memoria":"episodica","titulo":"Obra 170 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","alcance"],"links":["causas-de-desvio","mitigacion-cambio-alcance"],"extracto":"Proyecto de 36,929 m², 29 niveles, 73 unidades. Inicio: 2023-04 · Presupuesto inicial: $27,662,308 USD. Sobrecosto real: $325,911 USD · Sobreplazo real: 100 días. Cambio de alcance: 100% del sobrecosto ($325,911) La causa dominante de esta obra fue cambio de alcance. Ver procedimientos de…","fuente":"episodica/obra-170.md","obra_id":170},{"name":"obra-171","memoria":"episodica","titulo":"Obra 171 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","proveedor"],"links":["causas-de-desvio","mitigacion-proveedores"],"extracto":"Proyecto de 53,259 m², 35 niveles, 229 unidades. Inicio: 2021-01 · Presupuesto inicial: $41,007,323 USD. Sobrecosto real: $298,871 USD · Sobreplazo real: 91 días. Proveedor / suministro: 100% del sobrecosto ($298,871) La causa dominante de esta obra fue proveedor / suministro. Ver procedimientos de…","fuente":"episodica/obra-171.md","obra_id":171},{"name":"obra-174","memoria":"episodica","titulo":"Obra 174 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno"],"extracto":"Proyecto de 8,540 m², 12 niveles, 201 unidades. Inicio: 2024-05 · Presupuesto inicial: $5,641,107 USD. Sobrecosto real: $103,550 USD · Sobreplazo real: 37 días. Error u omisión de diseño: 100% del sobrecosto ($103,550) La causa dominante de esta obra fue error u omisión de diseño. Ver…","fuente":"episodica/obra-174.md","obra_id":174},{"name":"obra-175","memoria":"episodica","titulo":"Obra 175 — Concreto Tradicional, acabado Alto","tags":["concreto-tradicional","proveedor","diseno"],"links":["causas-de-desvio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 33,066 m², 27 niveles, 141 unidades. Inicio: 2020-09 · Presupuesto inicial: $18,401,072 USD. Sobrecosto real: $808,735 USD · Sobreplazo real: 62 días. Error u omisión de diseño: 59% del sobrecosto ($473,408) Proveedor / suministro: 41% del sobrecosto ($335,327) La causa dominante de…","fuente":"episodica/obra-175.md","obra_id":175},{"name":"obra-177","memoria":"episodica","titulo":"Obra 177 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","alcance","proveedor","diseno","desviacion-alta"],"links":["causas-de-desvio","mitigacion-cambio-alcance","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Proyecto de 55,875 m², 42 niveles, 612 unidades. Inicio: 2021-01 · Presupuesto inicial: $37,783,677 USD. Sobrecosto real: $2,274,829 USD · Sobreplazo real: 122 días. Cambio de alcance: 39% del sobrecosto ($882,273) Error u omisión de diseño: 36% del sobrecosto ($810,414) Proveedor / suministro: 26%…","fuente":"episodica/obra-177.md","obra_id":177},{"name":"obra-181","memoria":"episodica","titulo":"Obra 181 — Concreto Postensado, acabado Básico","tags":["concreto-postensado","diseno","sitio","desviacion-alta"],"links":["causas-de-desvio","mitigacion-condicion-sitio","mitigacion-error-diseno"],"extracto":"Proyecto de 49,323 m², 34 niveles, 398 unidades. Inicio: 2018-09 · Presupuesto inicial: $34,044,729 USD. Sobrecosto real: $1,665,758 USD · Sobreplazo real: 124 días. Error u omisión de diseño: 58% del sobrecosto ($959,091) Condición de sitio imprevista: 42% del sobrecosto ($706,667) La causa…","fuente":"episodica/obra-181.md","obra_id":181},{"name":"checklist-arranque-obra","memoria":"procedural","titulo":"Checklist de arranque de obra","tags":["checklist","arranque","prevencion","procedimiento"],"links":["bandas-de-riesgo","mitigacion-cambio-alcance","mitigacion-condicion-sitio","mitigacion-error-diseno","mitigacion-proveedores"],"extracto":"Verificaciones a completar antes de iniciar para reducir la exposición a las causas de desvío más frecuentes. Cada punto enlaza con su procedimiento de mitigación.","fuente":"procedural/checklist-arranque-obra.md","obra_id":null},{"name":"mitigacion-cambio-alcance","memoria":"procedural","titulo":"Mitigación de cambios de alcance","tags":["mitigacion","alcance","procedimiento"],"links":["causas-de-desvio","checklist-arranque-obra"],"extracto":"El cambio de alcance es una de las dos causas de mayor peso en el sobrecosto (~29 % del total reconstruido). No se elimina, se controla. 1. Congelar el alcance base antes de iniciar obra: acta firmada de requerimientos, planos y especificaciones, con número de versión. 2. Procedimiento formal de…","fuente":"procedural/mitigacion-cambio-alcance.md","obra_id":null},{"name":"mitigacion-condicion-sitio","memoria":"procedural","titulo":"Mitigación de condiciones de sitio imprevistas","tags":["mitigacion","sitio","procedimiento","terreno"],"links":["causas-de-desvio","checklist-arranque-obra"],"extracto":"Condiciones de sitio (terreno, nivel freático, roca, accesos) explican ~16 % del sobrecosto y golpean sobre todo cimentación y movimiento de tierras. Además impactan fuerte el plazo. 1. Estudio geotécnico completo antes de cerrar el presupuesto de cimentación, con sondeos suficientes para la…","fuente":"procedural/mitigacion-condicion-sitio.md","obra_id":null},{"name":"mitigacion-error-diseno","memoria":"procedural","titulo":"Mitigación de errores u omisiones de diseño","tags":["mitigacion","diseño","procedimiento"],"links":["causas-de-desvio","checklist-arranque-obra"],"extracto":"El error de diseño es la causa de mayor peso en el sobrecosto reconstruido (~31 %). Su coste es alto porque suele descubrirse con trabajo ya ejecutado que hay que rehacer. 1. Revisión de constructibilidad antes de iniciar: un tercero revisa planos buscando interferencias entre disciplinas…","fuente":"procedural/mitigacion-error-diseno.md","obra_id":null},{"name":"mitigacion-flujo-decisiones-cliente","memoria":"procedural","titulo":"Gestionar el flujo de decisiones del cliente","tags":["mitigacion","contexto","gestion","cliente","decisiones","morosidad","procedimiento"],"links":["contexto-equipo-decisiones","contexto-estructura-contractual"],"extracto":"Atiende el tipo de riesgo contextual contexto-equipo-decisiones (amplificador). Atenuar el efecto amplificador de un cliente con decisiones lentas o pagos morosos. 1. Designar un único interlocutor con poder de decisión del lado del cliente, o acordar un protocolo de aprobación con plazos máximos.…","fuente":"procedural/mitigacion-flujo-decisiones-cliente.md","obra_id":null},{"name":"mitigacion-madurez-ejecutivo","memoria":"procedural","titulo":"Controlar la madurez del proyecto ejecutivo","tags":["mitigacion","contexto","gestion","madurez","ejecutivo","procedimiento"],"links":["checklist-arranque-obra","contexto-madurez-ejecutivo","mitigacion-error-diseno"],"extracto":"Atiende el tipo de riesgo contextual contexto-madurez-ejecutivo. Reducir los RFIs y el retrabajo que provoca licitar con un proyecto ejecutivo incompleto. 1. Exigir un umbral mínimo de completitud antes de licitar (idealmente ≥90% de planos emitidos para construcción). Licitar sobre preliminares…","fuente":"procedural/mitigacion-madurez-ejecutivo.md","obra_id":null},{"name":"mitigacion-permisos","memoria":"procedural","titulo":"Mitigar riesgo de permisos","tags":["mitigacion","contexto","gestion","permisos","licencia","factibilidades","procedimiento"],"links":["checklist-arranque-obra","contexto-riesgo-regulatorio"],"extracto":"Atiende el tipo de riesgo contextual contexto-riesgo-regulatorio. Evitar que un permiso o factibilidad pendiente se convierta en un bloqueo de obra con retraso de plazo. 1. No movilizar sin licencia firme. Si la licencia está en trámite, no iniciar partidas que dependan de ella. La movilización…","fuente":"procedural/mitigacion-permisos.md","obra_id":null},{"name":"mitigacion-proveedores","memoria":"procedural","titulo":"Mitigación de riesgos de proveedor y suministro","tags":["mitigacion","proveedor","suministro","procedimiento"],"links":["causas-de-desvio","tipologias-constructivas"],"extracto":"Proveedor/suministro explica ~19 % del sobrecosto y es la causa que **más impacta el plazo** (retrasos de entrega que arrastran el cronograma). Es especialmente crítico en Concreto Postensado por la dependencia del acero de tensado. Ver tipologias-constructivas. 1. Cerrar contratos de materiales…","fuente":"procedural/mitigacion-proveedores.md","obra_id":null},{"name":"bandas-de-riesgo","memoria":"semantica","titulo":"Bandas de riesgo BAJO / MEDIO / ALTO","tags":["riesgo","bandas","clasificacion","score","probabilidad"],"links":[],"extracto":"El sistema no solo estima la magnitud del desvío (regresión); también clasifica cada obra en una banda de riesgo a partir de la probabilidad de que tenga un desvío \"por encima de lo normal\" (por encima de la mediana histórica). Es el indicador más fiable para alerta temprana. Sobre la probabilidad…","fuente":"semantica/bandas-de-riesgo.md","obra_id":null},{"name":"causas-de-desvio","memoria":"semantica","titulo":"Causas de desvío de costo en obra","tags":["causas","alcance","diseño","sitio","normativa","proveedor","clima","atribucion"],"links":["variables-del-modelo"],"extracto":"El sobrecosto de una obra rara vez tiene una sola causa. En el análisis forense de órdenes de cambio se clasifica cada evento en una de estas seis categorías (alineadas con la práctica de *variance analysis* de AACE y con la propuesta técnica del proyecto): Sobre el subconjunto del histórico con…","fuente":"semantica/causas-de-desvio.md","obra_id":null},{"name":"contexto-equipo-decisiones","memoria":"semantica","titulo":"Contexto de gestión — Equipo y flujo de decisiones (amplificador)","tags":["contexto","gestion","cliente","decisiones","morosidad","amplificador"],"links":["mitigacion-flujo-decisiones-cliente"],"extracto":"Tipo de riesgo contextual: 8 · Amplificador (multiplica el riesgo combinado de los demás) Describe la estructura de decisión del lado del cliente y su salud financiera. No es un riesgo \"de la obra\" en sí, sino un factor que amplifica o atenúa todos los demás. Un mismo riesgo técnico se comporta muy…","fuente":"semantica/contexto-equipo-decisiones.md","obra_id":null},{"name":"contexto-estructura-contractual","memoria":"semantica","titulo":"Contexto de gestión — Estructura contractual y financiamiento","tags":["contexto","gestion","contrato","financiamiento","anticipo","escalatorias","flujo"],"links":["contexto-equipo-decisiones"],"extracto":"Tipo de riesgo contextual: 6 · Estrés financiero (se suma al riesgo base) Mide el estrés financiero que impone la estructura del contrato: cuánto capital propio debe adelantar el contratista antes de cobrar, y cuánto lo protege el contrato frente a la inflación y el tipo de cambio. Un contrato con…","fuente":"semantica/contexto-estructura-contractual.md","obra_id":null},{"name":"contexto-madurez-ejecutivo","memoria":"semantica","titulo":"Contexto de gestión — Madurez del proyecto ejecutivo","tags":["contexto","gestion","madurez","ejecutivo","rfi","plazo"],"links":["mitigacion-madurez-ejecutivo"],"extracto":"Tipo de riesgo contextual: 1 · Riesgo base (incide sobre todo en el plazo) Mide qué tan completo y coordinado está el proyecto ejecutivo en el momento de licitar e iniciar la obra: planos, especificaciones técnicas, catálogo de conceptos y submittals. Un proyecto poco maduro se termina de definir…","fuente":"semantica/contexto-madurez-ejecutivo.md","obra_id":null},{"name":"contexto-morfologia-complejidad","memoria":"semantica","titulo":"Contexto de gestión — Morfología y complejidad del proyecto","tags":["contexto","gestion","morfologia","complejidad","geometria"],"links":["tipologias-constructivas"],"extracto":"Tipo de riesgo contextual: 2 · Riesgo base Mide cuán compleja es la geometría y el programa del edificio. Va de formas ortogonales regulares y repetitivas (riesgo bajo) a formas orgánicas con programa mixto y baja repetitividad (riesgo alto). Más complejidad = más detalles constructivos únicos, más…","fuente":"semantica/contexto-morfologia-complejidad.md","obra_id":null},{"name":"contexto-normativas-certificaciones","memoria":"semantica","titulo":"Contexto de gestión — Normativas y certificaciones especiales","tags":["contexto","gestion","normativa","certificaciones","leed","experiencia"],"links":["variables-del-modelo"],"extracto":"Tipo de riesgo contextual: 5 · Riesgo base Mide las exigencias normativas y de certificación, cruzadas con la experiencia del equipo en ellas. Una certificación LEED Gold con un equipo sin experiencia es un riesgo muy distinto al mismo LEED Gold con un equipo que ya lo hizo. El concepto clave es…","fuente":"semantica/contexto-normativas-certificaciones.md","obra_id":null},{"name":"contexto-riesgo-geotecnico","memoria":"semantica","titulo":"Contexto de gestión — Riesgo geotécnico y entorno físico","tags":["contexto","gestion","geotecnico","suelos","terreno","cimentacion"],"links":["causas-de-desvio","mitigacion-condicion-sitio"],"extracto":"Tipo de riesgo contextual: 3 · Riesgo base (incide sobre todo en el costo) Mide la incertidumbre sobre el terreno y su entorno. La ausencia de estudio de suelos específico se trata como el peor escenario posible para esa zona: lo que no se conoce, aparece como sorpresa (y sobrecosto) durante la…","fuente":"semantica/contexto-riesgo-geotecnico.md","obra_id":null},{"name":"contexto-riesgo-regulatorio","memoria":"semantica","titulo":"Contexto de gestión — Riesgo regulatorio y permisos","tags":["contexto","gestion","permisos","licencia","factibilidades","regulatorio","plazo"],"links":["causas-de-desvio","mitigacion-permisos"],"extracto":"Tipo de riesgo contextual: 4 · Riesgo base (incide sobre todo en el plazo) Mide cuán resuelto está el frente de permisos y factibilidades al iniciar. Un permiso en trámite no es neutro: es una bomba de tiempo que se vuelve bloqueante según la etapa de la obra. El riesgo depende tanto del estado del…","fuente":"semantica/contexto-riesgo-regulatorio.md","obra_id":null},{"name":"contexto-senales-ejecucion","memoria":"semantica","titulo":"Contexto de gestión — Señales tempranas en ejecución (diferido)","tags":["contexto","gestion","ejecucion","rfi","ordenes-de-cambio","diferido"],"links":["contexto-madurez-ejecutivo"],"extracto":"Tipo de riesgo contextual: 7 · Dinámico — DIFERIDO en esta etapa Es el único tipo dinámico: no se evalúa una vez al inicio, sino que se actualiza durante la obra cada vez que se registra un RFI, una orden de cambio o un submittal rechazado. Funciona como un termómetro en tiempo real del riesgo…","fuente":"semantica/contexto-senales-ejecucion.md","obra_id":null},{"name":"tipologias-constructivas","memoria":"semantica","titulo":"Tipologías constructivas","tags":["tipologia","postensado","tradicional","sistema-constructivo"],"links":["mitigacion-proveedores","variables-del-modelo"],"extracto":"El histórico contiene dos sistemas constructivos, ambos para vivienda vertical: Losas y elementos con cables tensados que permiten grandes luces y menos columnas. Predomina en el histórico (~65 % de las obras). Sensible a: suministro y precio del acero de postensado, y a la secuencia de tensado (un…","fuente":"semantica/tipologias-constructivas.md","obra_id":null},{"name":"variables-del-modelo","memoria":"semantica","titulo":"Variables del modelo y su efecto","tags":["variables","features","shap","avance","explicabilidad"],"links":["causas-de-desvio"],"extracto":"El modelo (Random Forest, uno por target) usa **14 variables conocidas al inicio de la obra**. No usa información futura, ni variables temporales (año, mes o trimestre de inicio), ni variables macroeconómicas: ambas familias fueron evaluadas y excluidas con evidencia empírica de validación cruzada…","fuente":"semantica/variables-del-modelo.md","obra_id":null}],"links_sin_resolver":[],"obras":[{"id":"obra-13","num":13,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":4.01,"plazo":10.0,"riesgo":"BAJO","dominante":"alcance","n_oc":2,"sobrecosto":384230},{"id":"obra-15","num":15,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":1.76,"plazo":7.95,"riesgo":"BAJO","dominante":"diseño","n_oc":1,"sobrecosto":157650},{"id":"obra-17","num":17,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":2.02,"plazo":5.0,"riesgo":"BAJO","dominante":"normativa","n_oc":1,"sobrecosto":128350},{"id":"obra-18","num":18,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":3.54,"plazo":10.0,"riesgo":"BAJO","dominante":"diseño","n_oc":2,"sobrecosto":973800},{"id":"obra-23","num":23,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":8.86,"plazo":30.0,"riesgo":"ALTO","dominante":"diseño","n_oc":3,"sobrecosto":677600},{"id":"obra-34","num":34,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":2.99,"plazo":7.92,"riesgo":"BAJO","dominante":"clima","n_oc":1,"sobrecosto":188200},{"id":"obra-35","num":35,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":3.75,"plazo":10.0,"riesgo":"BAJO","dominante":"diseño","n_oc":2,"sobrecosto":866800},{"id":"obra-44","num":44,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":14.24,"plazo":20.0,"riesgo":"ALTO","dominante":"alcance","n_oc":4,"sobrecosto":1942400},{"id":"obra-56","num":56,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Medio","costo":1.57,"plazo":7.16,"riesgo":"BAJO","dominante":"normativa","n_oc":1,"sobrecosto":253010},{"id":"obra-68","num":68,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Alto","costo":7.8,"plazo":11.69,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":564900},{"id":"obra-72","num":72,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":3.29,"plazo":17.93,"riesgo":"BAJO","dominante":"diseño","n_oc":2,"sobrecosto":526072},{"id":"obra-76","num":76,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":0.28,"plazo":7.2,"riesgo":"BAJO","dominante":"diseño","n_oc":1,"sobrecosto":79662},{"id":"obra-82","num":82,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":6.51,"plazo":18.3,"riesgo":"ALTO","dominante":"diseño","n_oc":3,"sobrecosto":1820571},{"id":"obra-85","num":85,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":0.45,"plazo":3.78,"riesgo":"BAJO","dominante":"sitio","n_oc":1,"sobrecosto":40368},{"id":"obra-87","num":87,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":7.75,"plazo":7.47,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":1632150},{"id":"obra-91","num":91,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":13.16,"plazo":13.58,"riesgo":"ALTO","dominante":"alcance","n_oc":4,"sobrecosto":856529},{"id":"obra-104","num":104,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":1.97,"plazo":6.97,"riesgo":"BAJO","dominante":"alcance","n_oc":1,"sobrecosto":615202},{"id":"obra-107","num":107,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":5.46,"plazo":2.75,"riesgo":"ALTO","dominante":"diseño","n_oc":2,"sobrecosto":1264280},{"id":"obra-108","num":108,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":0.28,"plazo":2.35,"riesgo":"BAJO","dominante":"diseño","n_oc":1,"sobrecosto":57727},{"id":"obra-118","num":118,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":12.25,"plazo":16.12,"riesgo":"ALTO","dominante":"diseño","n_oc":4,"sobrecosto":3177418},{"id":"obra-120","num":120,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":5.04,"plazo":7.21,"riesgo":"ALTO","dominante":"alcance","n_oc":2,"sobrecosto":778837},{"id":"obra-126","num":126,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":8.89,"plazo":18.87,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":1515947},{"id":"obra-127","num":127,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":0.28,"plazo":9.58,"riesgo":"BAJO","dominante":"sitio","n_oc":1,"sobrecosto":57835},{"id":"obra-128","num":128,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":2.96,"plazo":0.0,"riesgo":"BAJO","dominante":"normativa","n_oc":1,"sobrecosto":865860},{"id":"obra-133","num":133,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":10.07,"plazo":27.24,"riesgo":"ALTO","dominante":"diseño","n_oc":4,"sobrecosto":591820},{"id":"obra-139","num":139,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":2.96,"plazo":28.41,"riesgo":"BAJO","dominante":"proveedor","n_oc":1,"sobrecosto":396202},{"id":"obra-143","num":143,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":9.9,"plazo":15.13,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":1116350},{"id":"obra-145","num":145,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":4.93,"plazo":9.32,"riesgo":"ALTO","dominante":"alcance","n_oc":2,"sobrecosto":1570251},{"id":"obra-151","num":151,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":6.27,"plazo":24.63,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":770193},{"id":"obra-155","num":155,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":1.73,"plazo":14.44,"riesgo":"BAJO","dominante":"diseño","n_oc":1,"sobrecosto":469039},{"id":"obra-164","num":164,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":7.2,"plazo":13.84,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":2216866},{"id":"obra-165","num":165,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":2.84,"plazo":8.37,"riesgo":"BAJO","dominante":"proveedor","n_oc":1,"sobrecosto":199703},{"id":"obra-167","num":167,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":3.42,"plazo":3.87,"riesgo":"BAJO","dominante":"diseño","n_oc":2,"sobrecosto":357373},{"id":"obra-168","num":168,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Medio","costo":7.17,"plazo":11.26,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":2070086},{"id":"obra-170","num":170,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":1.18,"plazo":10.87,"riesgo":"BAJO","dominante":"alcance","n_oc":1,"sobrecosto":325911},{"id":"obra-171","num":171,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":0.73,"plazo":9.76,"riesgo":"BAJO","dominante":"proveedor","n_oc":1,"sobrecosto":298871},{"id":"obra-174","num":174,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":1.84,"plazo":7.96,"riesgo":"BAJO","dominante":"diseño","n_oc":1,"sobrecosto":103550},{"id":"obra-175","num":175,"tipo":"obra","tipologia":"Concreto Tradicional","acabado":"Alto","costo":4.4,"plazo":7.87,"riesgo":"BAJO","dominante":"diseño","n_oc":2,"sobrecosto":808735},{"id":"obra-177","num":177,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":6.02,"plazo":13.56,"riesgo":"ALTO","dominante":"alcance","n_oc":3,"sobrecosto":2274829},{"id":"obra-181","num":181,"tipo":"obra","tipologia":"Concreto Postensado","acabado":"Básico","costo":4.89,"plazo":15.27,"riesgo":"ALTO","dominante":"diseño","n_oc":2,"sobrecosto":1665758}],"causas":[{"id":"causa-diseño","key":"diseño","tipo":"causa","nombre":"Error / omisión de diseño","definicion":"Planos incompletos o con interferencias que obligan a rehacer trabajo.","pct_costo":30.8,"pct_plazo":23.5,"n_obras":22,"n_dominante":16,"fuente":"semantica/causas-de-desvio.md"},{"id":"causa-alcance","key":"alcance","tipo":"causa","nombre":"Cambio de alcance","definicion":"El cliente añade o modifica requerimientos respecto al contrato original.","pct_costo":28.9,"pct_plazo":16.4,"n_obras":16,"n_dominante":15,"fuente":"semantica/causas-de-desvio.md"},{"id":"causa-proveedor","key":"proveedor","tipo":"causa","nombre":"Proveedor / suministro","definicion":"Alza de precios o retrasos de materiales frente a la cotización inicial.","pct_costo":19.0,"pct_plazo":30.3,"n_obras":18,"n_dominante":3,"fuente":"semantica/causas-de-desvio.md"},{"id":"causa-sitio","key":"sitio","tipo":"causa","nombre":"Condición de sitio","definicion":"El terreno o el entorno difieren de lo esperado (nivel freático, roca, accesos).","pct_costo":15.9,"pct_plazo":22.8,"n_obras":18,"n_dominante":2,"fuente":"semantica/causas-de-desvio.md"},{"id":"causa-normativa","key":"normativa","tipo":"causa","nombre":"Ajuste normativo","definicion":"Exigencia de la autoridad surgida durante la ejecución.","pct_costo":4.7,"pct_plazo":5.1,"n_obras":6,"n_dominante":3,"fuente":"semantica/causas-de-desvio.md"},{"id":"causa-clima","key":"clima","tipo":"causa","nombre":"Clima","definicion":"Paralizaciones o daños por condiciones climáticas adversas.","pct_costo":0.7,"pct_plazo":1.7,"n_obras":2,"n_dominante":1,"fuente":"semantica/causas-de-desvio.md"}],"efectos":[{"id":"efecto-costo","tipo":"efecto","nombre":"Sobrecosto","total":34660935,"fuente":"semantica/causas-de-desvio.md"},{"id":"efecto-plazo","tipo":"efecto","nombre":"Sobreplazo","total":3429,"fuente":"semantica/causas-de-desvio.md"}],"procedural":[{"id":"proc-checklist-arranque-obra","tipo":"checklist","nombre":"Checklist de arranque de obra","causa":null,"pasos":[],"fuente":"procedural/checklist-arranque-obra.md","links":["mitigacion-cambio-alcance","mitigacion-error-diseno","mitigacion-condicion-sitio","mitigacion-proveedores","bandas-de-riesgo"]},{"id":"proc-mitigacion-cambio-alcance","tipo":"mitigacion","nombre":"Mitigación de cambios de alcance","causa":"alcance","pasos":["Congelar el alcance base","Procedimiento formal de control de cambios","Umbral de aprobación escalonado","Registro acumulado visible"],"fuente":"procedural/mitigacion-cambio-alcance.md","links":["causas-de-desvio","checklist-arranque-obra"]},{"id":"proc-mitigacion-condicion-sitio","tipo":"mitigacion","nombre":"Mitigación de condiciones de sitio imprevistas","causa":"sitio","pasos":["Estudio geotécnico completo","Contingencia específica de subsuelo","Cláusula de condición de sitio","Inspección temprana de accesos y servicios"],"fuente":"procedural/mitigacion-condicion-sitio.md","links":["causas-de-desvio","checklist-arranque-obra"]},{"id":"proc-mitigacion-error-diseno","tipo":"mitigacion","nombre":"Mitigación de errores u omisiones de diseño","causa":"diseño","pasos":["Revisión de constructibilidad","Coordinación BIM / detección de conflictos","Nivel de definición mínimo por partida","RFI ágil"],"fuente":"procedural/mitigacion-error-diseno.md","links":["causas-de-desvio","checklist-arranque-obra"]},{"id":"proc-mitigacion-flujo-decisiones-cliente","tipo":"mitigacion","nombre":"Gestionar el flujo de decisiones del cliente","causa":null,"pasos":["Designar un único interlocutor con poder de decisión","Pactar por contrato plazos de respuesta","Mapear la cadena de aprobación real","reforzar anticipo y garantías de pago"],"fuente":"procedural/mitigacion-flujo-decisiones-cliente.md","links":["contexto-equipo-decisiones","contexto-estructura-contractual"]},{"id":"proc-mitigacion-madurez-ejecutivo","tipo":"mitigacion","nombre":"Controlar la madurez del proyecto ejecutivo","causa":null,"pasos":["Exigir un umbral mínimo de completitud antes de licitar","Cerrar la coordinación BIM entre disciplinas","Convertir especificaciones genéricas en específicas","Cerrar el catálogo de conceptos"],"fuente":"procedural/mitigacion-madurez-ejecutivo.md","links":["contexto-madurez-ejecutivo","mitigacion-error-diseno","checklist-arranque-obra"]},{"id":"proc-mitigacion-permisos","tipo":"mitigacion","nombre":"Mitigar riesgo de permisos","causa":null,"pasos":["No movilizar sin licencia firme.","Consultar el historial del municipio.","Secuenciar por dependencia de permiso.","Verificar factibilidades antes de diseñar de forma definitiva."],"fuente":"procedural/mitigacion-permisos.md","links":["contexto-riesgo-regulatorio","checklist-arranque-obra"]},{"id":"proc-mitigacion-proveedores","tipo":"mitigacion","nombre":"Mitigación de riesgos de proveedor y suministro","causa":"proveedor","pasos":["Cerrar contratos de materiales críticos temprano","Órdenes de compra con precio en firme","Doble fuente","Buffer de plazo"],"fuente":"procedural/mitigacion-proveedores.md","links":["tipologias-constructivas","causas-de-desvio"]}],"aristas":{"obra_causa":[{"from":"obra-13","to":"causa-sitio","rel":"PRESENTÓ","pct":35.3,"dominante":false,"n_oc":1},{"from":"obra-13","to":"causa-alcance","rel":"PRESENTÓ","pct":64.7,"dominante":true,"n_oc":1},{"from":"obra-15","to":"causa-diseño","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-17","to":"causa-normativa","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-18","to":"causa-proveedor","rel":"PRESENTÓ","pct":42.4,"dominante":false,"n_oc":1},{"from":"obra-18","to":"causa-diseño","rel":"PRESENTÓ","pct":57.6,"dominante":true,"n_oc":1},{"from":"obra-23","to":"causa-diseño","rel":"PRESENTÓ","pct":58.8,"dominante":true,"n_oc":1},{"from":"obra-23","to":"causa-normativa","rel":"PRESENTÓ","pct":15.1,"dominante":false,"n_oc":1},{"from":"obra-23","to":"causa-sitio","rel":"PRESENTÓ","pct":26.1,"dominante":false,"n_oc":1},{"from":"obra-34","to":"causa-clima","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-35","to":"causa-diseño","rel":"PRESENTÓ","pct":66.1,"dominante":true,"n_oc":1},{"from":"obra-35","to":"causa-sitio","rel":"PRESENTÓ","pct":33.9,"dominante":false,"n_oc":1},{"from":"obra-44","to":"causa-alcance","rel":"PRESENTÓ","pct":43.5,"dominante":true,"n_oc":1},{"from":"obra-44","to":"causa-sitio","rel":"PRESENTÓ","pct":20.7,"dominante":false,"n_oc":1},{"from":"obra-44","to":"causa-normativa","rel":"PRESENTÓ","pct":11.0,"dominante":false,"n_oc":1},{"from":"obra-44","to":"causa-proveedor","rel":"PRESENTÓ","pct":24.8,"dominante":false,"n_oc":1},{"from":"obra-56","to":"causa-normativa","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-68","to":"causa-sitio","rel":"PRESENTÓ","pct":22.7,"dominante":false,"n_oc":1},{"from":"obra-68","to":"causa-alcance","rel":"PRESENTÓ","pct":43.4,"dominante":true,"n_oc":1},{"from":"obra-68","to":"causa-proveedor","rel":"PRESENTÓ","pct":33.8,"dominante":false,"n_oc":1},{"from":"obra-72","to":"causa-diseño","rel":"PRESENTÓ","pct":62.2,"dominante":true,"n_oc":1},{"from":"obra-72","to":"causa-proveedor","rel":"PRESENTÓ","pct":37.8,"dominante":false,"n_oc":1},{"from":"obra-76","to":"causa-diseño","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-82","to":"causa-proveedor","rel":"PRESENTÓ","pct":33.7,"dominante":false,"n_oc":1},{"from":"obra-82","to":"causa-diseño","rel":"PRESENTÓ","pct":42.7,"dominante":true,"n_oc":1},{"from":"obra-82","to":"causa-sitio","rel":"PRESENTÓ","pct":23.6,"dominante":false,"n_oc":1},{"from":"obra-85","to":"causa-sitio","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-87","to":"causa-diseño","rel":"PRESENTÓ","pct":33.1,"dominante":false,"n_oc":1},{"from":"obra-87","to":"causa-alcance","rel":"PRESENTÓ","pct":44.1,"dominante":true,"n_oc":1},{"from":"obra-87","to":"causa-proveedor","rel":"PRESENTÓ","pct":22.7,"dominante":false,"n_oc":1},{"from":"obra-91","to":"causa-alcance","rel":"PRESENTÓ","pct":36.4,"dominante":true,"n_oc":1},{"from":"obra-91","to":"causa-diseño","rel":"PRESENTÓ","pct":31.9,"dominante":false,"n_oc":1},{"from":"obra-91","to":"causa-normativa","rel":"PRESENTÓ","pct":9.6,"dominante":false,"n_oc":1},{"from":"obra-91","to":"causa-sitio","rel":"PRESENTÓ","pct":22.0,"dominante":false,"n_oc":1},{"from":"obra-104","to":"causa-alcance","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-107","to":"causa-sitio","rel":"PRESENTÓ","pct":33.1,"dominante":false,"n_oc":1},{"from":"obra-107","to":"causa-diseño","rel":"PRESENTÓ","pct":66.9,"dominante":true,"n_oc":1},{"from":"obra-108","to":"causa-diseño","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-118","to":"causa-diseño","rel":"PRESENTÓ","pct":30.1,"dominante":true,"n_oc":1},{"from":"obra-118","to":"causa-sitio","rel":"PRESENTÓ","pct":18.5,"dominante":false,"n_oc":1},{"from":"obra-118","to":"causa-alcance","rel":"PRESENTÓ","pct":28.7,"dominante":false,"n_oc":1},{"from":"obra-118","to":"causa-proveedor","rel":"PRESENTÓ","pct":22.7,"dominante":false,"n_oc":1},{"from":"obra-120","to":"causa-alcance","rel":"PRESENTÓ","pct":61.3,"dominante":true,"n_oc":1},{"from":"obra-120","to":"causa-proveedor","rel":"PRESENTÓ","pct":38.7,"dominante":false,"n_oc":1},{"from":"obra-126","to":"causa-alcance","rel":"PRESENTÓ","pct":52.2,"dominante":true,"n_oc":1},{"from":"obra-126","to":"causa-sitio","rel":"PRESENTÓ","pct":23.3,"dominante":false,"n_oc":1},{"from":"obra-126","to":"causa-proveedor","rel":"PRESENTÓ","pct":24.5,"dominante":false,"n_oc":1},{"from":"obra-127","to":"causa-sitio","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-128","to":"causa-normativa","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-133","to":"causa-diseño","rel":"PRESENTÓ","pct":36.9,"dominante":true,"n_oc":1},{"from":"obra-133","to":"causa-clima","rel":"PRESENTÓ","pct":6.6,"dominante":false,"n_oc":1},{"from":"obra-133","to":"causa-sitio","rel":"PRESENTÓ","pct":30.2,"dominante":false,"n_oc":1},{"from":"obra-133","to":"causa-proveedor","rel":"PRESENTÓ","pct":26.3,"dominante":false,"n_oc":1},{"from":"obra-139","to":"causa-proveedor","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-143","to":"causa-sitio","rel":"PRESENTÓ","pct":21.2,"dominante":false,"n_oc":1},{"from":"obra-143","to":"causa-diseño","rel":"PRESENTÓ","pct":39.2,"dominante":false,"n_oc":1},{"from":"obra-143","to":"causa-alcance","rel":"PRESENTÓ","pct":39.6,"dominante":true,"n_oc":1},{"from":"obra-145","to":"causa-diseño","rel":"PRESENTÓ","pct":48.2,"dominante":false,"n_oc":1},{"from":"obra-145","to":"causa-alcance","rel":"PRESENTÓ","pct":51.8,"dominante":true,"n_oc":1},{"from":"obra-151","to":"causa-sitio","rel":"PRESENTÓ","pct":22.0,"dominante":false,"n_oc":1},{"from":"obra-151","to":"causa-alcance","rel":"PRESENTÓ","pct":53.6,"dominante":true,"n_oc":1},{"from":"obra-151","to":"causa-proveedor","rel":"PRESENTÓ","pct":24.4,"dominante":false,"n_oc":1},{"from":"obra-155","to":"causa-diseño","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-164","to":"causa-proveedor","rel":"PRESENTÓ","pct":27.5,"dominante":false,"n_oc":1},{"from":"obra-164","to":"causa-sitio","rel":"PRESENTÓ","pct":25.0,"dominante":false,"n_oc":1},{"from":"obra-164","to":"causa-alcance","rel":"PRESENTÓ","pct":47.6,"dominante":true,"n_oc":1},{"from":"obra-165","to":"causa-proveedor","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-167","to":"causa-proveedor","rel":"PRESENTÓ","pct":43.9,"dominante":false,"n_oc":1},{"from":"obra-167","to":"causa-diseño","rel":"PRESENTÓ","pct":56.1,"dominante":true,"n_oc":1},{"from":"obra-168","to":"causa-diseño","rel":"PRESENTÓ","pct":33.9,"dominante":false,"n_oc":1},{"from":"obra-168","to":"causa-sitio","rel":"PRESENTÓ","pct":22.4,"dominante":false,"n_oc":1},{"from":"obra-168","to":"causa-alcance","rel":"PRESENTÓ","pct":43.7,"dominante":true,"n_oc":1},{"from":"obra-170","to":"causa-alcance","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-171","to":"causa-proveedor","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-174","to":"causa-diseño","rel":"PRESENTÓ","pct":100.0,"dominante":true,"n_oc":1},{"from":"obra-175","to":"causa-proveedor","rel":"PRESENTÓ","pct":41.5,"dominante":false,"n_oc":1},{"from":"obra-175","to":"causa-diseño","rel":"PRESENTÓ","pct":58.5,"dominante":true,"n_oc":1},{"from":"obra-177","to":"causa-alcance","rel":"PRESENTÓ","pct":38.8,"dominante":true,"n_oc":1},{"from":"obra-177","to":"causa-proveedor","rel":"PRESENTÓ","pct":25.6,"dominante":false,"n_oc":1},{"from":"obra-177","to":"causa-diseño","rel":"PRESENTÓ","pct":35.6,"dominante":false,"n_oc":1},{"from":"obra-181","to":"causa-diseño","rel":"PRESENTÓ","pct":57.6,"dominante":true,"n_oc":1},{"from":"obra-181","to":"causa-sitio","rel":"PRESENTÓ","pct":42.4,"dominante":false,"n_oc":1}],"causa_efecto":[{"from":"causa-diseño","to":"efecto-costo","rel":"CONTRIBUYE A","pct":30.8},{"from":"causa-diseño","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":23.5},{"from":"causa-alcance","to":"efecto-costo","rel":"CONTRIBUYE A","pct":28.9},{"from":"causa-alcance","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":16.4},{"from":"causa-proveedor","to":"efecto-costo","rel":"CONTRIBUYE A","pct":19.0},{"from":"causa-proveedor","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":30.3},{"from":"causa-sitio","to":"efecto-costo","rel":"CONTRIBUYE A","pct":15.9},{"from":"causa-sitio","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":22.8},{"from":"causa-normativa","to":"efecto-costo","rel":"CONTRIBUYE A","pct":4.7},{"from":"causa-normativa","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":5.1},{"from":"causa-clima","to":"efecto-costo","rel":"CONTRIBUYE A","pct":0.7},{"from":"causa-clima","to":"efecto-plazo","rel":"CONTRIBUYE A","pct":1.7}],"causa_mitigacion":[{"from":"causa-alcance","to":"proc-mitigacion-cambio-alcance","rel":"SE MITIGA CON"},{"from":"causa-sitio","to":"proc-mitigacion-condicion-sitio","rel":"SE MITIGA CON"},{"from":"causa-diseño","to":"proc-mitigacion-error-diseno","rel":"SE MITIGA CON"},{"from":"causa-proveedor","to":"proc-mitigacion-proveedores","rel":"SE MITIGA CON"}],"checklist":[{"from":"proc-checklist-arranque-obra","to":"proc-mitigacion-cambio-alcance","rel":"INCLUYE"},{"from":"proc-checklist-arranque-obra","to":"proc-mitigacion-condicion-sitio","rel":"INCLUYE"},{"from":"proc-checklist-arranque-obra","to":"proc-mitigacion-error-diseno","rel":"INCLUYE"},{"from":"proc-checklist-arranque-obra","to":"proc-mitigacion-proveedores","rel":"INCLUYE"}]},"narrativa":[118,177,167],"sin_procedimiento":["normativa","clima"],"escenarios":{"directa":{"titulo":"Obra 118 · con episodio documentado","obra":118,"diagnostico":{"pregunta":"¿Por qué se desvió esta obra?","traza":[{"paso":1,"tool":"consultar_shap","input":{"target":"desvio_costo"},"resumen":"desvio_costo: predicción 8.09% (media 4.88%); factor top 'nivel de avance del proyecto' +2.15 pts"},{"paso":2,"tool":"buscar_episodio","input":{},"resumen":"evidencia DIRECTA · obra 118 · causa dominante diseño · desvío real 12.25%"}],"respuesta":"Estructuralmente, el modelo predice un desvío de costo de 8.09% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+2.15 pts), m² por unidad (+0.29 pts), presupuesto diario (+0.27 pts). Esta es la causa ex-ante (SHAP, capa 2).\n\nEn la EJECUCIÓN real, esta obra (id 118) tuvo un desvío de costo de 12.25%, y la evidencia forense DIRECTA (órdenes de cambio) lo atribuye a: error u omisión de diseño, condición de sitio imprevista, cambio de alcance, proveedor / suministro, con error u omisión de diseño como causa dominante. Fuente: memoria episódica (órdenes de cambio del proyecto)."},"mitigacion":{"pregunta":"¿Cómo puedo evitar que vuelva a pasar?","traza":[{"paso":1,"tool":"consultar_shap","input":{"target":"desvio_costo"},"resumen":"desvio_costo: predicción 8.09% (media 4.88%); factor top 'nivel de avance del proyecto' +2.15 pts"},{"paso":2,"tool":"buscar_episodio","input":{},"resumen":"evidencia DIRECTA · obra 118 · causa dominante diseño · desvío real 12.25%"},{"paso":3,"tool":"leer_memoria","input":{"tipo":"procedural","tags":["diseño"]},"resumen":"1 docs: mitigacion-error-diseno"}],"respuesta":"Para mitigar el riesgo, el foco debe estar en la causa dominante documentada de esta obra (error u omisión de diseño). Procedimiento recomendado:\n  1. Revisión de constructibilidad antes de iniciar: un tercero revisa planos buscando interferencias entre disciplinas (estructura, instalaciones, arquitectura).\n  2. Coordinación BIM / detección de conflictos cuando el proyecto lo permita, para cazar interferencias en el modelo y no en obra.\n  3. Nivel de definición mínimo por partida antes de contratar: no arrancar una partida con planos incompletos (especialmente cimentación e instalaciones).\n  4. RFI ágil: canal formal de consultas técnicas con tiempo de respuesta acotado, para que una duda de diseño no paralice el frente de trabajo.\nFuente: memoria procedural [[mitigacion-error-diseno]]."}},"estadistica":{"titulo":"Proyecto nuevo · sin historial","proyecto":{"sup_m2":38807,"niveles":30,"sistema_constructivo":"Concreto Tradicional","nivel_acabado":"Alto"},"vecinos":[{"num":97,"costo":5.97,"alto":true,"episodio":false},{"num":118,"costo":12.25,"alto":true,"episodio":true},{"num":101,"costo":4.51,"alto":false,"episodio":false},{"num":110,"costo":2.24,"alto":false,"episodio":false},{"num":175,"costo":4.4,"alto":false,"episodio":true}],"diagnostico":{"pregunta":"¿Qué explica el riesgo de este proyecto?","traza":[{"paso":1,"tool":"consultar_shap","input":{"target":"desvio_costo"},"resumen":"desvio_costo: predicción 7.57% (media 4.88%); factor top 'nivel de avance del proyecto' +2.00 pts"},{"paso":2,"tool":"buscar_episodio","input":{},"resumen":"sin evidencia directa (El proyecto en contexto es nuevo (sin id histórico); no hay órdenes de cambio.)"},{"paso":3,"tool":"buscar_casos_similares","input":{"k":5},"resumen":"5 vecinos · tasa desvío alto costo 0.4 · 2 con episodio"}],"respuesta":"Estructuralmente, el modelo predice un desvío de costo de 7.57% (media histórica 4.88%). Los factores que MÁS lo empujan al alza son: nivel de avance del proyecto (+2.00 pts), m² por unidad (+0.26 pts), presupuesto inicial (+0.14 pts). Esta es la causa ex-ante (SHAP, capa 2).\n\nNO hay órdenes de cambio documentadas para este proyecto, así que la atribución de causa es una inferencia ESTADÍSTICA, no evidencia directa: de 5 obras comparables, 2 tuvieron desvío de costo alto real (tasa 40%). Entre las comparables con episodio documentado (118, 175), las causas típicas son diseño y alcance. Fuente: casos similares (capa 4) + patrones agregados (capa 3)."},"mitigacion":{"pregunta":"¿Cómo mitigo el riesgo?","traza":[{"paso":1,"tool":"consultar_shap","input":{"target":"desvio_costo"},"resumen":"desvio_costo: predicción 7.57% (media 4.88%); factor top 'nivel de avance del proyecto' +2.00 pts"},{"paso":2,"tool":"buscar_episodio","input":{},"resumen":"sin evidencia directa (El proyecto en contexto es nuevo (sin id histórico); no hay órdenes de cambio.)"},{"paso":3,"tool":"leer_memoria","input":{"tipo":"procedural","tags":["diseño"]},"resumen":"1 docs: mitigacion-error-diseno"}],"respuesta":"Para mitigar el riesgo, el foco debe estar en las causas de mayor peso en el histórico (diseño y alcance). Procedimiento recomendado:\n  1. Revisión de constructibilidad antes de iniciar: un tercero revisa planos buscando interferencias entre disciplinas (estructura, instalaciones, arquitectura).\n  2. Coordinación BIM / detección de conflictos cuando el proyecto lo permita, para cazar interferencias en el modelo y no en obra.\n  3. Nivel de definición mínimo por partida antes de contratar: no arrancar una partida con planos incompletos (especialmente cimentación e instalaciones).\n  4. RFI ágil: canal formal de consultas técnicas con tiempo de respuesta acotado, para que una duda de diseño no paralice el frente de trabajo.\nFuente: memoria procedural [[mitigacion-error-diseno]]."}}},"resumen":{"n_obras":40,"n_causas":6,"n_procedimientos":8,"n_ordenes":82,"n_wikilinks":148,"n_docs":{"total":60,"semantica":12,"procedural":8,"episodica":40}}}</script>
+<script>
+(() => {
+  'use strict';
+  const D = JSON.parse(document.getElementById('graph-data').textContent);
+  const Q = new URLSearchParams(location.search);
+  const EXPORT = Q.has('export');
+  const root = document.documentElement;
+  root.dataset.theme = Q.get('theme') === 'light' ? 'light' : 'dark';
+  if (EXPORT) document.body.classList.add('export');
+
+  const WORD = { 'diseño': 'diseño', alcance: 'alcance', proveedor: 'proveedor', sitio: 'sitio', normativa: 'normativa', clima: 'clima' };
+  const GROUPS = {
+    episodica:  { name: 'Memoria episódica',  what: 'qué pasó',        col: 'epi' },
+    semantica:  { name: 'Memoria semántica',  what: 'qué sabe',        col: 'sem' },
+    procedural: { name: 'Memoria procedural', what: 'cómo se hace',    col: 'proc' },
+    causa:      { name: 'Conceptos · causas', what: 'tabla de causas', col: 'acc' },
+    tag:        { name: 'Etiquetas #tag',     what: 'front-matter',    col: 'tag' },
+  };
+  const S = {
+    show: { episodica: true, semantica: true, procedural: true, causa: Q.get('causas') !== '0', tag: Q.get('tags') === '1' },
+    colorBy: Q.get('color') || 'memoria', depth: +(Q.get('depth') || 1),
+    arrows: false, particles: true, labelZoom: 1.05, pin: false,
+    f: { repel: 380, dist: 60, link: 0.6, gravity: 0.06 },
+  };
+
+  // ---------------- construir el grafo desde las memorias reales ----------------
+  const NODES = new Map(), LINKS = [];
+  const obraByNum = new Map((D.obras || []).map(o => [o.num, o]));
+  const procByDoc = new Map((D.procedural || []).map(p => [p.id.replace(/^proc-/, ''), p]));
+  const docByNum = new Map();
+  const causaIdx = new Map((D.causas || []).map((c, i) => [c.key, i]));
+  const addNode = n => { Object.assign(n, { x: 0, y: 0, vx: 0, vy: 0, fx: null, fy: null, deg: 0, r: 5, a: 0, placed: false }); NODES.set(n.id, n); return n; };
+  const addLink = (s, t, kind, rel, extra) => { if (NODES.has(s) && NODES.has(t) && s !== t) LINKS.push({ s, t, kind, rel, ...extra }); };
+  const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  for (const d of D.documentos || []) {
+    const n = addNode({ id: d.name, group: d.memoria, label: d.name, doc: d });
+    if (d.obra_id != null) { n.obra = obraByNum.get(+d.obra_id); docByNum.set(+d.obra_id, d.name); }
+    n.proc = procByDoc.get(d.name);
+  }
+  for (const d of D.documentos || []) for (const l of d.links) addLink(d.name, l, 'wiki', 'wikilink');
+  const nWiki = LINKS.length;
+  for (const c of D.causas || [])
+    addNode({ id: c.id, group: 'causa', label: WORD[c.key] || c.key, causa: c, sinGuia: (D.sin_procedimiento || []).includes(c.key) });
+  const A = D.aristas || {};
+  for (const e of A.obra_causa || []) addLink(docByNum.get(+String(e.from).replace(/\D/g, '')), e.to, 'concepto', 'PRESENTÓ', { pct: e.pct, dominante: e.dominante });
+  for (const e of A.causa_mitigacion || []) addLink(e.from, e.to.replace(/^proc-/, ''), 'concepto', 'SE MITIGA CON');
+  for (const c of D.causas || []) addLink(c.id, 'causas-de-desvio', 'concepto', 'DEFINIDA EN');
+  for (const d of D.documentos || []) for (const t of d.tags || []) {
+    const id = 'tag:' + norm(t);
+    if (!NODES.has(id)) addNode({ id, group: 'tag', label: '#' + norm(t) });
+    addLink(d.name, id, 'tag', 'TAG');
+  }
+  const count = g => [...NODES.values()].filter(n => n.group === g).length;
+
+  // ---------------- colores (desde las variables CSS del tema) ----------------
+  let C = {};
+  function readColors() {
+    const cs = getComputedStyle(root), v = k => cs.getPropertyValue('--' + k).trim();
+    C = {}; ['bg0', 'bg1', 'ink', 'ink2', 'muted', 'edge', 'edgec', 'edget', 'halo', 'star', 'epi', 'sem', 'proc', 'acc', 'risk', 'warn', 'ok', 'tag',
+             'c1', 'c2', 'c3', 'c4', 'c5', 'c6'].forEach(k => C[k] = v(k));
+    C.neb = parseFloat(v('neb')) || 0;
+    C.dark = root.dataset.theme === 'dark';
+  }
+  const causeColor = key => C['c' + ((causaIdx.get(key) ?? 0) % 6 + 1)];
+  function colorOf(n) {
+    if (n.group === 'episodica' && n.obra) {
+      if (S.colorBy === 'causa') return causeColor(n.obra.dominante);
+      if (S.colorBy === 'riesgo') return n.obra.riesgo === 'ALTO' ? C.risk : C.epi;
+    }
+    if (n.group === 'causa' && S.colorBy === 'causa') return causeColor(n.causa.key);
+    return C[GROUPS[n.group].col];
+  }
+  const rgba = (hex, a) => {
+    if (hex.startsWith('rgb')) return hex;
+    const h = hex.replace('#', ''), f = h.length === 3 ? h.split('').map(x => x + x).join('') : h;
+    const i = parseInt(f, 16); return `rgba(${i >> 16 & 255},${i >> 8 & 255},${i & 255},${a})`;
+  };
+
+  // ---------------- nodos y enlaces visibles ----------------
+  let vis = [], vlinks = [], adj = new Map();
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  function rebuild() {
+    vis = [...NODES.values()].filter(n => S.show[n.group]);
+    const on = new Set(vis.map(n => n.id));
+    vlinks = LINKS.filter(l => on.has(l.s) && on.has(l.t));
+    adj = new Map(vis.map(n => [n.id, new Set()]));
+    vis.forEach(n => n.deg = 0);
+    for (const l of vlinks) {
+      l.S = NODES.get(l.s); l.T = NODES.get(l.t);
+      l.S.deg++; l.T.deg++; adj.get(l.s).add(l.t); adj.get(l.t).add(l.s);
+    }
+    vis.forEach((n, i) => {
+      n.r = (n.group === 'tag' ? 2.5 : n.group === 'causa' ? 6 : n.group === 'episodica' ? 2.8 : 3.5) + Math.sqrt(n.deg) * (n.group === 'tag' ? 1.1 : n.group === 'episodica' ? 1.5 : 1.9);
+      n.q = 1 + Math.sqrt(n.deg) * 0.12;
+      if (!n.placed) {                          // aparece junto a un vecino ya colocado, o en espiral
+        const nb = [...adj.get(n.id)].map(id => NODES.get(id)).find(m => m.placed);
+        if (nb) { n.x = nb.x + (rnd() - .5) * 40; n.y = nb.y + (rnd() - .5) * 40; }
+        else { const rr = 9 * Math.sqrt(.5 + i), th = i * Math.PI * (3 - Math.sqrt(5)); n.x = rr * Math.cos(th); n.y = rr * Math.sin(th); }
+        n.placed = true;
+      }
+    });
+    stats(); legend();
+  }
+
+  // ---------------- simulación de fuerzas (estilo d3-force, sin librerías) ----------------
+  const sim = { alpha: 1, target: 0, decay: 1 - Math.pow(0.001, 1 / 320), vdecay: 0.42, min: 0.002 };
+  const heat = (a = 0.8) => { sim.alpha = Math.max(sim.alpha, a); };
+  function tick() {
+    sim.alpha += (sim.target - sim.alpha) * sim.decay;
+    const al = sim.alpha, F = S.f, n = vis.length;
+    for (const l of vlinks) {                                    // resortes
+      const s = l.S, t = l.T;
+      let dx = t.x + t.vx - s.x - s.vx, dy = t.y + t.vy - s.y - s.vy;
+      const d = Math.hypot(dx, dy) || 1e-6;
+      const rest = F.dist * (l.kind === 'tag' ? .7 : 1) + s.r + t.r;
+      const k = (d - rest) / d * al * F.link / Math.min(s.deg, t.deg);
+      dx *= k; dy *= k;
+      const b = s.deg / (s.deg + t.deg);
+      t.vx -= dx * b; t.vy -= dy * b; s.vx += dx * (1 - b); s.vy += dy * (1 - b);
+    }
+    for (let i = 0; i < n; i++) {                                // repulsión + colisión
+      const a = vis[i];
+      for (let j = i + 1; j < n; j++) {
+        const b = vis[j];
+        let dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+        if (l2 < 1e-4) { dx = (rnd() - .5) * 1e-2; dy = (rnd() - .5) * 1e-2; l2 = dx * dx + dy * dy; }
+        if (l2 < 640000) {
+          const w = F.repel * al / l2;
+          a.vx -= dx * w * b.q; a.vy -= dy * w * b.q; b.vx += dx * w * a.q; b.vy += dy * w * a.q;
+        }
+        const rr = a.r + b.r + 5;
+        if (l2 < rr * rr) {
+          const l = Math.sqrt(l2), m = (rr - l) / l * .35;
+          a.vx -= dx * m; a.vy -= dy * m; b.vx += dx * m; b.vy += dy * m;
+        }
+      }
+    }
+    const gx = F.gravity * Math.min(1, Math.pow(aspect, -1.6)), gy = F.gravity;   // gravedad elíptica: aprovecha pantallas anchas
+    for (const v of vis) {                                       // gravedad + integración
+      v.vx -= v.x * gx * al; v.vy -= v.y * gy * al;
+      if (v.fx != null) { v.x = v.fx; v.y = v.fy; v.vx = v.vy = 0; }
+      else { v.vx *= 1 - sim.vdecay; v.vy *= 1 - sim.vdecay; v.x += v.vx; v.y += v.vy; }
+    }
+  }
+  const running = () => sim.alpha > sim.min || sim.target > 0;
+
+  // ---------------- cámara ----------------
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  let W = 0, H = 0, DPR = 1, aspect = 1.6;
+  const cam = { x: 0, y: 0, k: 1 }, camT = { x: 0, y: 0, k: 1 };
+  let autoFit = true;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2.5); W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    aspect = W > 900 ? Math.max(.6, (W - 440) / (H - 160)) : Math.max(.6, (W - 40) / (H - 190));
+  }
+  const toS = (x, y) => [W / 2 + (x - cam.x) * cam.k, H / 2 + (y - cam.y) * cam.k];
+  const toW = (sx, sy) => [(sx - W / 2) / cam.k + cam.x, (sy - H / 2) / cam.k + cam.y];
+  function fitTarget() {
+    if (!vis.length) return;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const n of vis) { x0 = Math.min(x0, n.x - n.r); y0 = Math.min(y0, n.y - n.r); x1 = Math.max(x1, n.x + n.r); y1 = Math.max(y1, n.y + n.r); }
+    const wide = W > 900, padL = wide ? 400 : 20, padR = wide ? 40 : 20, padT = wide ? 90 : 110, padB = wide ? 70 : 80;
+    const aw = Math.max(200, W - padL - padR), ah = Math.max(200, H - padT - padB);
+    const k = Math.min(aw / (x1 - x0 + 40), ah / (y1 - y0 + 60), 3);
+    camT.k = k; camT.x = (x0 + x1) / 2 - (padL - padR) / 2 / k; camT.y = (y0 + y1) / 2 - (padT - padB) / 2 / k;
+  }
+  function focusOn(n, k) {
+    autoFit = false; camT.k = k || Math.max(cam.k, 1.6);
+    const wide = W > 900; camT.x = n.x - (wide ? 190 : 0) / camT.k; camT.y = n.y;
+  }
+
+  // ---------------- selección y resaltado ----------------
+  let hover = null, sel = null, drag = null, matches = null;
+  let focusKey = '', levels = null;
+  function computeFocus() {
+    const f = sel || drag || hover;
+    const key = (f ? f.id : '') + '|' + S.depth + '|' + (matches ? [...matches].join(',') : '') + '|' + vlinks.length;
+    if (key === focusKey) return;
+    focusKey = key;
+    if (f) {
+      levels = new Map([[f.id, 0]]); let front = [f.id];
+      for (let d = 1; d <= S.depth; d++) {
+        const nx = [];
+        for (const id of front) for (const m of adj.get(id) || []) if (!levels.has(m)) { levels.set(m, d); nx.push(m); }
+        front = nx;
+      }
+    } else if (matches) levels = new Map([...matches].map(id => [id, 0]));
+    else levels = null;
+  }
+  function select(n, center) {
+    sel = n; focusKey = ''; renderInfo();
+    if (n && center) focusOn(n);
+    if (n && !EXPORT) history.replaceState(null, '', setParam('select', n.id));
+    if (!n && !EXPORT) history.replaceState(null, '', setParam('select', null));
+  }
+  function setParam(k, v) { const u = new URL(location.href); v == null ? u.searchParams.delete(k) : u.searchParams.set(k, v); return u; }
+
+  // ---------------- dibujo ----------------
+  const stars = Array.from({ length: 190 }, () => ({ x: rnd(), y: rnd(), r: rnd() * 1.1 + .25, p: rnd() * 6.28, s: .4 + rnd() * .9 }));
+  function background(t) {
+    const g = ctx.createRadialGradient(W * .55, H * .5, 0, W * .55, H * .5, Math.max(W, H) * .8);
+    g.addColorStop(0, C.bg0); g.addColorStop(1, C.bg1);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    if (C.neb > 0) for (const [cx, cy, rr, col] of [[.62, .42, .45, C.epi], [.78, .7, .32, C.sem], [.42, .75, .3, C.proc]]) {
+      const ng = ctx.createRadialGradient(W * cx, H * cy, 0, W * cx, H * cy, Math.max(W, H) * rr);
+      ng.addColorStop(0, rgba(col, C.neb * .55)); ng.addColorStop(1, rgba(col, 0));
+      ctx.fillStyle = ng; ctx.fillRect(0, 0, W, H);
+    }
+    if (C.dark) {
+      ctx.fillStyle = C.star;
+      for (const s of stars) {
+        const x = ((s.x * W - cam.x * .03 * s.s) % W + W) % W, y = ((s.y * H - cam.y * .03 * s.s) % H + H) % H;
+        ctx.globalAlpha = .15 + .55 * (0.5 + 0.5 * Math.sin(t / 900 * s.s + s.p));
+        ctx.beginPath(); ctx.arc(x, y, s.r, 0, 6.283); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+  const smooth = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+  function lvlOf(n) { return levels ? levels.get(n.id) : 0; }
+  function draw(t) {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    background(t);
+    const k = cam.k, f = sel || drag || hover, hasF = !!levels;
+    const lw = Math.max(.5, Math.min(1.6, .9 * Math.sqrt(k)));
+
+    // enlaces atenuados / normales
+    const hl = [];
+    for (const l of vlinks) {
+      const ls = lvlOf(l.S), lt = lvlOf(l.T);
+      let strong = false, mid = false;
+      if (hasF && f) { strong = ls === 0 || lt === 0; mid = !strong && ls != null && lt != null; }
+      else if (hasF) strong = ls === 0 && lt === 0;
+      if (strong) { hl.push(l); continue; }
+      const [x1, y1] = toS(l.S.x, l.S.y), [x2, y2] = toS(l.T.x, l.T.y);
+      ctx.globalAlpha = Math.min(l.S.a, l.T.a) * (hasF ? (mid ? .9 : .25) : 1);
+      ctx.strokeStyle = l.kind === 'wiki' ? C.edge : l.kind === 'concepto' ? C.edgec : C.edget;
+      ctx.lineWidth = lw * (mid ? 1.3 : 1);
+      if (l.kind === 'tag') ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      if (l.kind === 'tag') ctx.setLineDash([]);
+      if (S.arrows && l.kind !== 'tag') arrow(l, x1, y1, x2, y2, ctx.strokeStyle, 1);
+    }
+    ctx.globalAlpha = 1;
+    // enlaces resaltados: degradado del color de origen al de destino + partículas
+    for (const l of hl) {
+      const [x1, y1] = toS(l.S.x, l.S.y), [x2, y2] = toS(l.T.x, l.T.y);
+      const c1 = colorOf(l.S), c2 = colorOf(l.T);
+      const g = ctx.createLinearGradient(x1, y1, x2, y2); g.addColorStop(0, c1); g.addColorStop(1, c2);
+      ctx.strokeStyle = g; ctx.lineWidth = lw * 2.1;
+      if (C.dark) { ctx.shadowColor = c2; ctx.shadowBlur = 8; }
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.shadowBlur = 0;
+      if (l.kind !== 'tag') arrow(l, x1, y1, x2, y2, c2, 1.25);
+      if (S.particles) {
+        const len = Math.hypot(x2 - x1, y2 - y1), sp = 60 + len * .15;
+        const off = (l.s.length * 7 + l.t.length * 13) % 100 / 100;
+        for (let p = 0; p < 2; p++) {
+          const u = ((t / 1000) * sp / Math.max(len, 1) + off + p / 2) % 1;
+          ctx.fillStyle = c2; ctx.globalAlpha = Math.sin(u * Math.PI);
+          if (C.dark) { ctx.shadowColor = c2; ctx.shadowBlur = 10; }
+          ctx.beginPath(); ctx.arc(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, 2.3, 0, 6.283); ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    // nodos (los atenuados primero, el foco al final)
+    const order = vis.slice().sort((a, b) => (a.a - b.a) || (a === f) - (b === f));
+    for (const n of order) {
+      const [x, y] = toS(n.x, n.y), r = Math.max(1.6, n.r * Math.pow(k, .75)), col = colorOf(n);
+      const lv = lvlOf(n), isF = n === f, bright = !hasF || lv != null;
+      ctx.globalAlpha = n.a;
+      if (C.dark && bright && (n.group !== 'episodica' || isF || (hasF && lv != null))) { ctx.shadowColor = col; ctx.shadowBlur = isF ? 26 : 14; }
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.arc(x, y, r * (n === hover ? 1.18 : 1), 0, 6.283); ctx.fill();
+      ctx.shadowBlur = 0;
+      if (n.group === 'causa') {                                 // concepto: anillo interior
+        ctx.fillStyle = C.bg1; ctx.beginPath(); ctx.arc(x, y, r * .5, 0, 6.283); ctx.fill();
+        ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r * .26, 0, 6.283); ctx.fill();
+      }
+      if (n.sinGuia) {                                           // hueco de conocimiento
+        ctx.strokeStyle = C.warn; ctx.lineWidth = 1.4; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(x, y, r + 5, 0, 6.283); ctx.stroke(); ctx.setLineDash([]);
+      }
+      if (n.fx != null && n !== drag) {                          // fijado
+        ctx.fillStyle = C.ink; ctx.beginPath(); ctx.arc(x + r * .75, y - r * .75, 2.4, 0, 6.283); ctx.fill();
+      }
+      if (n === sel) {
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x, y, r + 4, 0, 6.283); ctx.stroke();
+        const pu = (t % 1800) / 1800;
+        ctx.strokeStyle = col; ctx.globalAlpha = n.a * (1 - pu) * .8; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(x, y, r + 4 + pu * 22, 0, 6.283); ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // etiquetas (tamaño constante en pantalla, aparecen con el zoom como en Obsidian)
+    const zA = smooth(S.labelZoom * .75, S.labelZoom * 1.15, k);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round';
+    for (const n of order) {
+      const lv = lvlOf(n), hub = n.group === 'semantica' || n.group === 'procedural' || n.group === 'causa';
+      let a;
+      if (hasF) a = lv === 0 ? 1 : lv === 1 ? (f ? 1 : .9) : lv === 2 ? .75 : zA * .15;
+      else a = hub ? 1 : zA * (n.group === 'tag' ? .8 : 1);
+      if (n === hover) a = 1;
+      a *= Math.max(n.a, .3);
+      if (a < .03) continue;
+      const [x, y] = toS(n.x, n.y), r = Math.max(1.6, n.r * Math.pow(k, .75));
+      const big = hub || n === f;
+      ctx.font = `${big ? 700 : 600} ${big ? 13 : 11.5}px Manrope, 'Segoe UI', system-ui, sans-serif`;
+      ctx.globalAlpha = a;
+      ctx.strokeStyle = C.halo; ctx.lineWidth = 4; ctx.strokeText(n.label, x, y + r + 5);
+      ctx.fillStyle = n === f ? C.ink : hub ? C.ink2 : C.muted;
+      if (hasF && lv != null) ctx.fillStyle = C.ink;
+      ctx.fillText(n.label, x, y + r + 5);
+      if (n.sinGuia && (a > .5)) {
+        ctx.font = `800 9.5px Manrope, 'Segoe UI', sans-serif`; ctx.fillStyle = C.warn;
+        ctx.strokeText('SIN PROCEDIMIENTO', x, y + r + 21); ctx.fillText('SIN PROCEDIMIENTO', x, y + r + 21);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+  function arrow(l, x1, y1, x2, y2, col, s) {
+    const d = Math.hypot(x2 - x1, y2 - y1); if (d < 20) return;
+    const r = Math.max(1.6, l.T.r * Math.pow(cam.k, .75)) + 3, ux = (x2 - x1) / d, uy = (y2 - y1) / d;
+    const px = x2 - ux * r, py = y2 - uy * r, a = 6 * s, b = 3.2 * s;
+    ctx.fillStyle = col; ctx.beginPath();
+    ctx.moveTo(px, py); ctx.lineTo(px - ux * a - uy * b, py - uy * a + ux * b); ctx.lineTo(px - ux * a + uy * b, py - uy * a - ux * b);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // ---------------- bucle ----------------
+  let last = performance.now();
+  function frame(t) {
+    const dt = Math.min(64, t - last); last = t;
+    if (running()) { tick(); if (sim.alpha > .3) tick(); }
+    if (autoFit) fitTarget();
+    const e = 1 - Math.pow(1 - .12, dt / 16.7);
+    cam.x += (camT.x - cam.x) * e; cam.y += (camT.y - cam.y) * e; cam.k *= Math.pow(camT.k / cam.k, e);
+    computeFocus();
+    const f = sel || drag || hover;
+    for (const n of vis) {
+      const lv = levels ? levels.get(n.id) : 0;
+      const tgt = !levels ? 1 : lv == null ? .13 : lv === 2 ? .7 : 1;
+      n.a += (tgt - n.a) * Math.min(1, e * 1.6);
+    }
+    draw(t);
+    requestAnimationFrame(frame);
+  }
+
+  // ---------------- interacción: arrastrar, seleccionar, desplazar, zoom ----------------
+  function hit(sx, sy) {
+    const [x, y] = toW(sx, sy); let best = null, bd = Infinity;
+    for (const n of vis) {
+      const r = Math.max(n.r * Math.pow(cam.k, .75), 1.6) / cam.k + 6 / cam.k;
+      const d = Math.hypot(n.x - x, n.y - y);
+      if (d < r && d < bd) { bd = d; best = n; }
+    }
+    return best;
+  }
+  let down = null, pointers = new Map(), pinch = null;
+  cv.addEventListener('pointerdown', ev => {
+    cv.setPointerCapture(ev.pointerId); pointers.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pointers.size === 2) {
+      const [a, b] = [...pointers.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), k: cam.k }; down = null;
+      if (drag) { drag.fx = drag.fy = null; drag = null; sim.target = 0; } return;
+    }
+    const n = hit(ev.clientX, ev.clientY);
+    down = { x: ev.clientX, y: ev.clientY, node: n, moved: false, cx: cam.x, cy: cam.y };
+    if (n) { drag = n; n.fx = n.x; n.fy = n.y; }
+  });
+  cv.addEventListener('pointermove', ev => {
+    if (pointers.has(ev.pointerId)) pointers.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pinch && pointers.size === 2) {
+      const [a, b] = [...pointers.values()];
+      cam.k = camT.k = Math.min(8, Math.max(.08, pinch.k * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinch.d)); autoFit = false; return;
+    }
+    if (down) {
+      if (!down.moved && Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 3) {
+        down.moved = true;
+        if (drag) { sim.target = .25; heat(.35); autoFit = false; }
+        cv.style.cursor = 'grabbing';
+      }
+      if (!down.moved) return;
+      if (drag) { const [x, y] = toW(ev.clientX, ev.clientY); drag.fx = x; drag.fy = y; }
+      else { autoFit = false; cam.x = camT.x = down.cx - (ev.clientX - down.x) / cam.k; cam.y = camT.y = down.cy - (ev.clientY - down.y) / cam.k; }
+      return;
+    }
+    const n = hit(ev.clientX, ev.clientY);
+    if (n !== hover) { hover = n; cv.style.cursor = n ? 'pointer' : 'default'; }
+  });
+  function endPointer(ev) {
+    pointers.delete(ev.pointerId);
+    if (pinch) { if (pointers.size < 2) pinch = null; return; }
+    if (!down) return;
+    const d = down; down = null; cv.style.cursor = hover ? 'pointer' : 'default';
+    if (drag) {
+      if (!(S.pin && d.moved) && !drag.pinned) { drag.fx = drag.fy = null; }
+      if (S.pin && d.moved) drag.pinned = true;
+      drag = null; sim.target = 0;
+    }
+    if (!d.moved) {
+      if (d.node) select(d.node === sel ? null : d.node, false);
+      else if (sel) select(null);
+    }
+  }
+  cv.addEventListener('pointerup', endPointer);
+  cv.addEventListener('pointercancel', endPointer);
+  cv.addEventListener('pointerleave', () => { if (!down) hover = null; });
+  cv.addEventListener('dblclick', ev => {
+    const n = hit(ev.clientX, ev.clientY);
+    if (n) { if (n.pinned) { n.pinned = false; n.fx = n.fy = null; heat(.3); } select(n, true); focusOn(n, Math.max(cam.k * 1.6, 2)); }
+    else { autoFit = true; }
+  });
+  cv.addEventListener('wheel', ev => {
+    ev.preventDefault(); autoFit = false;
+    const [wx, wy] = toW(ev.clientX, ev.clientY);
+    const k = Math.min(8, Math.max(.08, cam.k * Math.exp(-ev.deltaY * (ev.ctrlKey ? .01 : .0016))));
+    cam.k = camT.k = k; cam.x = camT.x = wx - (ev.clientX - W / 2) / k; cam.y = camT.y = wy - (ev.clientY - H / 2) / k;
+  }, { passive: false });
+
+  // ---------------- ficha de la nota ----------------
+  const info = document.getElementById('info');
+  const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const pct = v => (v == null ? '—' : (+v).toFixed(1).replace('.0', '') + '%');
+  const RELS = [
+    ['PRESENTÓ|out', 'Causas que presentó'], ['PRESENTÓ|in', 'Obras donde apareció'],
+    ['SE MITIGA CON|out', 'Se mitiga con'], ['SE MITIGA CON|in', 'Mitiga la causa'],
+    ['wikilink|out', 'Enlaza a  [[…]]'], ['wikilink|in', 'Backlinks  (notas que la enlazan)'],
+    ['DEFINIDA EN|out', 'Definida en'], ['DEFINIDA EN|in', 'Define los conceptos'],
+    ['TAG|out', 'Etiquetas'], ['TAG|in', 'Notas con esta etiqueta'],
+  ];
+  function renderInfo() {
+    const n = sel;
+    info.classList.toggle('on', !!n);
+    if (!n) { info.innerHTML = ''; return; }
+    const g = GROUPS[n.group], col = colorOf(n);
+    let h = `<div class="top"><span class="tipo" style="color:${col}">● ${g.name} · ${g.what}</span><button class="x" title="Cerrar (Esc)">×</button></div>`;
+    if (n.doc) {
+      h += `<h2>${esc(n.doc.titulo)}</h2><div class="src">knowledge/${esc(n.doc.fuente)}</div>`;
+    } else if (n.causa) {
+      h += `<h2>${esc(n.causa.nombre)}</h2><div class="src">concepto · ${esc(n.causa.fuente || 'knowledge/semantica/causas-de-desvio.md')}</div>`;
+    } else h += `<h2>${esc(n.label)}</h2><div class="src">etiqueta del front-matter</div>`;
+
+    if (n.obra) {
+      const o = n.obra;
+      h += `<div class="kpis">
+        <div class="kpi"><div class="k">Desvío de costo</div><div class="v">${pct(o.costo)}</div></div>
+        <div class="kpi"><div class="k">Desvío de plazo</div><div class="v">${pct(o.plazo)}</div></div>
+        <div class="kpi"><div class="k">Riesgo</div><div class="v" style="color:${o.riesgo === 'ALTO' ? C.risk : C.ok}">${esc(o.riesgo)}</div></div>
+        <div class="kpi"><div class="k">Causa dominante</div><div class="v" style="color:${S.colorBy === 'causa' ? causeColor(o.dominante) : C.acc}">${esc(WORD[o.dominante] || o.dominante)}</div></div>
+      </div><p class="txt">${esc(o.tipologia)} · acabado ${esc(o.acabado)} · ${o.n_oc} órdenes de cambio${o.sobrecosto ? ` · sobrecosto ${esc(fmtUsd(o.sobrecosto))}` : ''}.</p>`;
+    } else if (n.causa) {
+      const c = n.causa;
+      h += `<p class="txt">${esc(c.definicion)}</p><div class="kpis">
+        <div class="kpi"><div class="k">Peso en sobrecosto</div><div class="v">${pct(c.pct_costo)}</div></div>
+        <div class="kpi"><div class="k">Peso en sobreplazo</div><div class="v">${pct(c.pct_plazo)}</div></div>
+        <div class="kpi"><div class="k">Presente en</div><div class="v">${c.n_obras} obras</div></div>
+        <div class="kpi"><div class="k">Dominante en</div><div class="v">${c.n_dominante} obras</div></div></div>`;
+      if (n.sinGuia) h += `<div class="warn">⚠ No existe procedimiento de mitigación en la memoria procedural: hueco de conocimiento detectado.</div>`;
+    } else if (n.proc && n.proc.pasos && n.proc.pasos.length) {
+      h += `<ol>${n.proc.pasos.map(p => `<li>${esc(p)}</li>`).join('')}</ol>`;
+    } else if (n.doc && n.doc.extracto) {
+      h += `<p class="txt">${esc(n.doc.extracto)}</p>`;
+    } else if (n.group === 'tag') {
+      h += `<p class="txt">Etiqueta presente en ${LINKS.filter(l => l.t === n.id).length} notas.</p>`;
+    }
+
+    const byRel = new Map();
+    for (const l of LINKS) {
+      let key, other;
+      if (l.s === n.id) { key = l.rel + '|out'; other = l.t; } else if (l.t === n.id) { key = l.rel + '|in'; other = l.s; } else continue;
+      if (!byRel.has(key)) byRel.set(key, []);
+      byRel.get(key).push({ id: other, l });
+    }
+    for (const [key, title] of RELS) {
+      const arr = byRel.get(key); if (!arr) continue;
+      arr.sort((a, b) => (b.l.pct || 0) - (a.l.pct || 0) || a.id.localeCompare(b.id));
+      h += `<div class="grp"><div class="k">${title} · ${arr.length}</div><div class="chips">` + arr.map(({ id, l }) => {
+        const m = NODES.get(id), on = S.show[m.group];
+        const extra = l.rel === 'PRESENTÓ' && l.pct != null ? ` <small>${pct(l.pct)}${l.dominante ? ' ★' : ''}</small>` : '';
+        return `<span class="chip${on ? '' : ' off'}" data-id="${esc(id)}"><i style="background:${colorOf(m)}"></i>${esc(m.label)}${extra}</span>`;
+      }).join('') + `</div></div>`;
+    }
+    info.innerHTML = h;
+    info.scrollTop = 0;
+  }
+  const fmtUsd = v => '$' + Math.round(+v).toLocaleString('en-US') + ' USD';
+  info.addEventListener('click', ev => {
+    if (ev.target.closest('.x')) return select(null);
+    const c = ev.target.closest('.chip[data-id]');
+    if (c && !c.classList.contains('off')) select(NODES.get(c.dataset.id), true);
+  });
+  info.addEventListener('mouseover', ev => { const c = ev.target.closest('.chip[data-id]'); if (c) hover = NODES.get(c.dataset.id); });
+  info.addEventListener('mouseleave', () => { hover = null; });
+
+  // ---------------- leyenda, subtítulo, estadísticas ----------------
+  const leg = document.getElementById('legend');
+  function legend() {
+    let h = `<div class="ttl">Memorias · clic para ocultar</div>`;
+    for (const [g, m] of Object.entries(GROUPS)) {
+      if (g === 'tag' && !S.show.tag) continue;
+      let col = C[m.col];
+      if ((g === 'episodica' && S.colorBy !== 'memoria') || (g === 'causa' && S.colorBy === 'causa')) col = 'linear-gradient(135deg,' + (S.colorBy === 'riesgo' && g === 'episodica' ? `${C.risk} 50%,${C.epi} 50%` : [1, 2, 3, 4].map(i => C['c' + i]).join(',')) + ')';
+      h += `<div class="item${S.show[g] ? '' : ' off'}" data-g="${g}"><i style="background:${col};color:${C[m.col]}"></i>${m.name} <small>${count(g)}</small></div>`;
+    }
+    if (S.colorBy === 'causa') h += `<div class="note">Color de cada episodio = su causa dominante: ` +
+      (D.causas || []).map(c => `<b style="color:${causeColor(c.key)}">${WORD[c.key] || c.key}</b>`).join(' · ') + `</div>`;
+    if (S.colorBy === 'riesgo') h += `<div class="note">Color de cada episodio = banda de riesgo real: <b style="color:${C.risk}">ALTO</b> · <b style="color:${C.epi}">BAJO</b>` +
+      (S.show.tag ? ` — con #tags visibles se ve cómo se agrupan solas` : '') + `</div>`;
+    if (S.show.causa) h += `<div class="note">◌ anillo punteado = causa sin procedimiento de mitigación</div>`;
+    leg.innerHTML = h;
+  }
+  leg.addEventListener('click', ev => {
+    const it = ev.target.closest('.item'); if (!it) return;
+    const g = it.dataset.g; S.show[g] = !S.show[g];
+    if (!Object.values(S.show).some(Boolean)) S.show[g] = true;
+    if (sel && !S.show[sel.group]) select(null);
+    rebuild(); heat(.6); autoFit = true; syncSettings(); renderInfo();
+  });
+  function stats() {
+    const r = D.resumen || {};
+    document.getElementById('sub').innerHTML =
+      `<b>${(D.documentos || []).length} notas .md</b> de las tres memorias · <b>${nWiki} enlaces [[wikilink]]</b> reales` +
+      (S.show.causa ? ` · <b>${count('causa')} conceptos</b> y <b>${r.n_ordenes || ''}</b> relaciones de las órdenes de cambio` : '') +
+      `. Selecciona una nota para ver con qué se conecta.`;
+    document.getElementById('stats').textContent = `${vis.length} nodos · ${vlinks.length} enlaces`;
+  }
+
+  // ---------------- ajustes ----------------
+  const setBox = document.getElementById('settings');
+  const getK = k => k.split('.').reduce((o, p) => o[p], S);
+  const setK = (k, v) => { const ps = k.split('.'), last = ps.pop(); ps.reduce((o, p) => o[p], S)[last] = v; };
+  function syncSettings() {
+    setBox.querySelectorAll('[data-k]').forEach(i => {
+      const v = getK(i.dataset.k);
+      if (i.type === 'checkbox') i.checked = !!v; else { i.value = v; if (i.nextElementSibling) i.nextElementSibling.textContent = (+v).toFixed(i.step < .1 ? 2 : 0); }
+    });
+    setBox.querySelectorAll('[data-seg]').forEach(s => s.querySelectorAll('button').forEach(b => b.classList.toggle('on', String(S[s.dataset.seg]) === b.dataset.v)));
+  }
+  setBox.addEventListener('input', ev => {
+    const i = ev.target, k = i.dataset.k; if (!k) return;
+    setK(k, i.type === 'checkbox' ? i.checked : +i.value);
+    if (k.startsWith('show.')) { if (sel && !S.show[sel.group]) select(null); rebuild(); autoFit = true; renderInfo(); }
+    if (k.startsWith('f.') || k.startsWith('show.')) heat(.5);
+    syncSettings();
+  });
+  setBox.addEventListener('click', ev => {
+    const b = ev.target.closest('.seg button'); if (!b) return;
+    const key = b.closest('.seg').dataset.seg; S[key] = key === 'depth' ? +b.dataset.v : b.dataset.v;
+    focusKey = ''; syncSettings(); legend(); renderInfo();
+  });
+  document.getElementById('bHeat').onclick = () => { for (const n of vis) { n.vx += (rnd() - .5) * 8; n.vy += (rnd() - .5) * 8; } heat(1); autoFit = true; };
+  document.getElementById('bUnpin').onclick = () => { for (const n of vis) { n.pinned = false; n.fx = n.fy = null; } heat(.4); };
+  document.getElementById('bSet').onclick = () => { setBox.classList.toggle('on'); document.getElementById('bSet').classList.toggle('on', setBox.classList.contains('on')); };
+  document.getElementById('bFit').onclick = () => { autoFit = true; };
+  document.getElementById('bTheme').onclick = () => toggleTheme();
+  const goViews = v => { location.href = `grafo-memorias.html?view=${v}&theme=${root.dataset.theme}`; };
+  document.getElementById('bBack').onclick = () => goViews('red');
+  function toggleTheme() {
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    readColors(); legend(); renderInfo();
+    history.replaceState(null, '', setParam('theme', root.dataset.theme));
+  }
+
+  // ---------------- búsqueda ----------------
+  const q = document.getElementById('q');
+  q.addEventListener('input', () => {
+    const s = norm(q.value.trim());
+    matches = s ? new Set(vis.filter(n => norm(n.label + ' ' + (n.doc ? n.doc.titulo + ' ' + (n.doc.tags || []).join(' ') : '') + (n.causa ? ' ' + n.causa.nombre : '')).includes(s)).map(n => n.id)) : null;
+    if (matches && !matches.size) matches = null;
+    if (sel) select(null);
+  });
+  q.addEventListener('keydown', ev => {
+    if (ev.key === 'Enter' && matches) { const n = NODES.get([...matches][0]); matches = null; q.value = ''; q.blur(); select(n, true); }
+    if (ev.key === 'Escape') { q.value = ''; matches = null; q.blur(); }
+  });
+
+  // ---------------- teclado ----------------
+  addEventListener('keydown', ev => {
+    if (ev.target === q || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    const k = ev.key.toLowerCase();
+    if (k === '1' || k === '2' || k === '3') goViews(['narrativa', 'red', 'agente'][+k - 1]);
+    else if (k === 't') toggleTheme();
+    else if (k === 'f') autoFit = true;
+    else if (k === 'r') document.getElementById('bHeat').click();
+    else if (k === 'g') document.getElementById('bSet').click();
+    else if (k === 'c') { S.show.causa = !S.show.causa; if (sel && !S.show[sel.group]) select(null); rebuild(); heat(.6); autoFit = true; syncSettings(); }
+    else if (k === '/') { ev.preventDefault(); q.focus(); }
+    else if (k === 'escape') { select(null); setBox.classList.remove('on'); document.getElementById('bSet').classList.remove('on'); }
+  });
+  addEventListener('resize', () => { resize(); if (autoFit) fitTarget(); if (EXPORT) staticDraw(); });
+  let hintT = setTimeout(() => document.getElementById('hint').style.opacity = .55, 9000);
+
+  function staticDraw() { fitTarget(); Object.assign(cam, camT); draw(1200); }
+
+  // ---------------- arranque ----------------
+  readColors(); resize(); rebuild(); syncSettings();
+  if (EXPORT) {                                   // disposición estable para exportar a PNG
+    for (let i = 0; i < 900 && running(); i++) tick();
+    const s0 = Q.get('select'); if (s0 && NODES.has(s0)) select(NODES.get(s0));
+    computeFocus();
+    for (const n of vis) { const lv = levels ? levels.get(n.id) : 0; n.a = !levels ? 1 : lv == null ? .13 : lv === 2 ? .7 : 1; }
+    staticDraw();
+    if (document.fonts) document.fonts.ready.then(staticDraw);
+  } else {
+    const s0 = Q.get('select');
+    if (s0 && NODES.has(s0)) setTimeout(() => select(NODES.get(s0)), 1200);
+    requestAnimationFrame(frame);
+  }
+  window.__red = { S, NODES, get vis() { return vis; }, get vlinks() { return vlinks; }, sim, cam, select, toS, get sel() { return sel; } };
+})();
+</script>
+</body>
+</html>

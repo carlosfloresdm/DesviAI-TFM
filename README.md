@@ -63,6 +63,8 @@ DESVIAI_TFM/
 ├── styles.css
 ├── docs/
 │   └── GUION_DEMO.md      guion para la presentación
+├── presentacion/grafos/   grafos de las 3 memorias para la presentación final
+│                          (vistas 1-3 + red interactiva tipo Obsidian + PNG 4K)
 ├── knowledge/             base de conocimiento (memorias .md, esquema OKF)
 │   ├── semantica/         conceptos del dominio
 │   ├── procedural/        guías de mitigación
