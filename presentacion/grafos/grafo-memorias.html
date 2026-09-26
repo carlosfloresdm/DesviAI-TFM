@@ -71,6 +71,8 @@
   #bar.v3 .scen { display: inline-block; }
 
   body.export #bar, body.export #tip { display: none; }
+  body.embed #bar [data-view], body.embed #red4, body.embed #theme, body.embed #bar .sep { display: none !important; }
+  body.embed #bar:not(.v3) { display: none; }
   body.export *, body.export *::before { animation: none !important; transition: none !important; }
   body.export .particle { display: none; }
 </style>
@@ -105,8 +107,10 @@
     theme: qs.get('theme') === 'light' ? 'light' : 'dark',
     scen: qs.get('scenario') === 'estadistica' ? 'estadistica' : 'directa',
     exp: qs.has('export'),
+    embed: qs.has('embed'),          // incrustado en la app: la app decide vista y tema
   };
   if (S.exp) document.body.classList.add('export');
+  if (S.embed) document.body.classList.add('embed');
 
   const byId = {};
   [...DATA.obras, ...DATA.causas, ...DATA.efectos, ...DATA.procedural].forEach(n => byId[n.id] = n);
@@ -817,6 +821,7 @@
     document.getElementById('theme').textContent = S.theme === 'dark' ? '☀ Claro' : '☾ Oscuro';
     if (!S.exp) {
       const p = new URLSearchParams({ view: S.view, theme: S.theme }); if (S.view === 'agente') p.set('scenario', S.scen);
+      if (S.embed) p.set('embed', '1');
       history.replaceState(null, '', '?' + p);
     }
   }
@@ -833,6 +838,7 @@
   const openRed = () => { location.href = 'red-interactiva.html?theme=' + S.theme; };
   const VIEWS = ['narrativa', 'red', 'agente'];
   window.addEventListener('keydown', ev => {
+    if (S.embed && !['s', 'S', 'p', 'P', ' '].includes(ev.key)) return;   // en la app solo escenario y reproducir
     if (ev.key === '4') return openRed();
     if (ev.key === '1' || ev.key === '2' || ev.key === '3') S.view = VIEWS[+ev.key - 1];
     else if (ev.key === 'ArrowRight' || ev.key === 'PageDown') S.view = VIEWS[(VIEWS.indexOf(S.view) + 1) % 3];

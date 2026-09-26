@@ -107,6 +107,7 @@ function App() {
           {route === 'chat'      && <ScreenChat go={go} project={project} analysis={analysis}/>}
           {route === 'closeout'  && <ScreenCloseout go={go} showToast={showToast}/>}
           {route === 'history'   && <ScreenHistory go={go} historico={historico} openObra={openObra}/>}
+          {route === 'memoria'   && <ScreenMemoria/>}
           {route === 'settings'  && <ScreenSettings/>}
         </main>
       </div>

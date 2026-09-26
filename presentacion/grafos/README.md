@@ -24,6 +24,14 @@ procedural). **Todo se genera desde la base de conocimiento real** (`knowledge/*
    También se muestran los 6 conceptos de causa con sus 82 relaciones de órdenes de cambio,
    y se pueden activar los `#tags`.
 
+## Dentro de la app
+
+Los grafos también se ven en la aplicación (local y en Render), en el menú lateral
+**Memoria del agente**, con una pestaña por vista, tema claro u oscuro y un botón de pantalla completa.
+La pantalla es `screen-memoria.jsx` e incrusta estas mismas páginas con `?embed=1`, un modo que
+oculta los botones que llevarían fuera de la app. En cada despliegue, el `Dockerfile` vuelve a ejecutar
+`build_data.py` para que los grafos coincidan con la memoria desplegada. Los PNG no entran en la imagen.
+
 ## Red interactiva (vista 4)
 
 Abrir `red-interactiva.html` con doble clic, o pulsar `4` / el botón *4 · Red interactiva* en las otras vistas.
