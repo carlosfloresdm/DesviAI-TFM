@@ -1,7 +1,7 @@
 /* eslint-disable */
 // Shared UI primitives for DesviAI (Procore/ACC-like shell)
 
-const ROUTES = ['dashboard', 'form', 'pipeline', 'report', 'chat', 'closeout', 'history', 'settings', 'login'];
+const ROUTES = ['dashboard', 'form', 'pipeline', 'report', 'chat', 'closeout', 'history', 'memoria', 'settings', 'login'];
 
 /* ============== Icons ============== */
 const I = {
@@ -23,6 +23,7 @@ const I = {
   arrowRight: (p={}) => <svg {...p} width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   plus:    (p={}) => <svg {...p} width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"/></svg>,
   download:(p={}) => <svg {...p} width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 4v12m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  graph:   (p={}) => <svg {...p} width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.5 7.5l4 3M13.5 11l4.5-4M12 14v4.5M7 17l3.5-2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/><circle cx="5" cy="6" r="2" stroke="currentColor" strokeWidth="1.8"/><circle cx="19" cy="5.5" r="2" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="12.5" r="2.5" stroke="currentColor" strokeWidth="1.8"/><circle cx="12" cy="20" r="1.6" stroke="currentColor" strokeWidth="1.8"/><circle cx="5.5" cy="18" r="1.6" stroke="currentColor" strokeWidth="1.8"/></svg>,
   logout:  (p={}) => <svg {...p} width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 4h4v16h-4M14 12H4M8 8l-4 4 4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
 };
 
@@ -36,6 +37,7 @@ function Sidebar({ route, go }) {
       { k: 'predict',   label: 'Nueva predicción', icon: I.predict, target: 'form',     count: '4 pasos' },
       { k: 'closeout',  label: 'Cerrar proyecto',  icon: I.check,   target: 'closeout', count: 1 },
       { k: 'history',   label: 'Historial',        icon: I.history, target: 'history',  count: 50 },
+      { k: 'memoria',   label: 'Memoria del agente', icon: I.graph, target: 'memoria' },
     ]},
     { key: 'workspace', title: 'Workspace', items: [
       { k: 'projects',  label: 'Proyectos',     icon: I.folder,  target: 'history' },
@@ -54,6 +56,7 @@ function Sidebar({ route, go }) {
     if (isPredictionFlow)      return 'predict';
     if (route === 'closeout')  return 'closeout';
     if (route === 'history')   return 'history';
+    if (route === 'memoria')   return 'memoria';
     if (route === 'settings')  return 'settings';
     return null;
   })();
@@ -126,6 +129,7 @@ function TopBar({ route, go, onLogout, crumbs }) {
       case 'chat':      return [{ label: 'Predicciones', go: 'history' }, { label: 'Agente · P-050', current: true }];
       case 'closeout':  return [{ label: 'Predicciones', go: 'history' }, { label: 'Cerrar proyecto · P-049', current: true }];
       case 'history':   return [{ label: 'Historial', current: true }];
+      case 'memoria':   return [{ label: 'Memoria del agente', current: true }];
       case 'settings':  return [{ label: 'Configuración', current: true }];
       default: return [];
     }
@@ -182,7 +186,7 @@ function TopBar({ route, go, onLogout, crumbs }) {
 /* ============== Subnav (project tabs / context) ============== */
 function SubNav({ route, go }) {
   // Show only on dashboard / list pages — the prediction flow uses the Stepper.
-  if (['form','pipeline','report','chat','login'].includes(route)) return null;
+  if (['form','pipeline','report','chat','login','memoria'].includes(route)) return null;
 
   const tabs = [
     { k: 'dashboard', label: 'Resumen',            target: 'dashboard' },
